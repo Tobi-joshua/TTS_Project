@@ -1,0 +1,22 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0
+xmax = 2.229637
+tiers? <exists>
+size = 1
+item []:
+    item [1]:
+        class = "IntervalTier"
+        name = "syllables"
+        xmin = 0
+        xmax = 2.229637
+        intervals: size = 2
+        intervals [1]:
+            xmin = 0.212000
+            xmax = 1.093000
+            text = "Bang3"
+        intervals [2]:
+            xmin = 1.141000
+            xmax = 2.022000
+            text = "boe1"
