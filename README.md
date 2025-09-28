@@ -1,4 +1,4 @@
-# Expert Hive TTS Project — README
+# TTS Project — README
 
 A beginner-friendly guide for the hand-cut syllable TTS system. This README is a concise, step-by-step reference so anyone can get the project running quickly.
 
