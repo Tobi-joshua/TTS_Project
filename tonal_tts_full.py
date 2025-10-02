@@ -79,6 +79,9 @@ class SyllableDB:
     Simple object representing a folder of WAV tokens. It loads a list of
     .wav files into SyllableUnit objects and supports simple aliasing via
     a meta.json file placed in the DB folder.
+
+    This version recursively scans subfolders (useful for datasets organized
+    per-sentence).
     """
     def __init__(self, folder_path: str):
         self.folder_path = folder_path    # store path for later uses
@@ -88,111 +91,114 @@ class SyllableDB:
 
     def _load(self):
         """
-        Iterate over the folder and create SyllableUnit entries for each WAV.
-        Also parse meta.json for optional aliases mapping (alias -> canonical).
+        Recursively scan the DB folder and create SyllableUnit entries for each WAV.
+        Token name = filename without extension (basename). Also load meta.json at root.
         """
         meta_path = os.path.join(self.folder_path, "meta.json")
         if os.path.exists(meta_path):
             try:
                 with open(meta_path, "r", encoding="utf-8") as f:
-                    self.meta = json.load(f)   # load alias metadata if present
+                    self.meta = json.load(f)
             except Exception:
-                print("Warning: could not parse meta.json; ignoring.")  # non-fatal
+                print("Warning: could not parse meta.json; ignoring.")
 
-        # iterate over files in folder and collect .wav files
-        for fname in sorted(os.listdir(self.folder_path)):
-            if not fname.lower().endswith(".wav"):
-                continue                     # skip non-wav files
-            token = os.path.splitext(fname)[0]  # token is filename without extension
-            full = os.path.join(self.folder_path, fname)
-            self.units[token] = SyllableUnit(token=token, path=full)  # create unit
+        # Walk the tree and index .wav files (basename without ext used as token)
+        for dirpath, dirs, files in os.walk(self.folder_path):
+            for fname in files:
+                if not fname.lower().endswith(".wav"):
+                    continue
+                token = os.path.splitext(fname)[0]  # filename without extension
+                full = os.path.join(dirpath, fname)
+                # Avoid overwriting an existing token with the same basename found earlier
+                if token in self.units:
+                    # keep first found; if you prefer last-found, remove this check
+                    continue
+                self.units[token] = SyllableUnit(token=token, path=full)
+                # also register lowercase key for case-insensitive lookups
+                lower = token.lower()
+                if lower not in self.units:
+                    self.units[lower] = self.units[token]
 
-        # apply aliases (if meta.json contained {"aliases": {"aliasName":"Canonical"}})
+        # Apply aliases from meta.json (if present), but only if canonical exists.
         aliases = self.meta.get("aliases", {})
         for alias, canonical in aliases.items():
             if canonical in self.units:
-                self.units[alias] = self.units[canonical]  # alias points to same SyllableUnit
+                self.units[alias] = self.units[canonical]
 
     def get(self, token: str) -> Optional[SyllableUnit]:
-        """Return the SyllableUnit for token, or None if not found."""
-        return self.units.get(token)
+        """Return the SyllableUnit for token, or None if not found.
+           This tries exact lookup then lowercase lookup for robustness."""
+        if token is None:
+            return None
+        # try exact first
+        unit = self.units.get(token)
+        if unit:
+            return unit
+        # fallback to lowercase lookup to tolerate case differences
+        return self.units.get(token.lower())
 
     def available_tokens(self) -> List[str]:
         """Return a list of token names available in the DB."""
-        return list(self.units.keys())
+        # return unique set (map may have lowercase aliases)
+        return list({u.token for u in self.units.values()})
 
 # --- Text -> syllable/token mapping ------------------------------------------
 class TextToSyllableMapper:
     """
     Maps orthographic words (plain text) or token sequences to a list of tokens.
-    It uses:
-      - an optional lexicon (word -> token list) if provided,
-      - a set of diphthongs/triphthongs (multi-character vowel combos),
-      - a list of onomatopoeia (words that should be treated as single tokens),
-      - fallback matching based on available tokens in the DB (longest-first).
-    The mapping is intentionally greedy (longest match first) so multi-character
-    combinations are prioritized.
+    Safer version: uses only lexicon keys and vowel combos for orthographic greedy
+    matching — not raw DB token names.
     """
     def __init__(self, db: SyllableDB, lexicon_path: Optional[str]=None):
-        self.db = db                                # database to check token existence
-        self.lexicon = {}                           # loaded lexicon mapping (optional)
+        self.db = db
+        self.lexicon = {}
         if lexicon_path and os.path.exists(lexicon_path):
             try:
                 with open(lexicon_path, "r", encoding="utf-8") as f:
-                    self.lexicon = json.load(f)     # load lexicon if present
+                    raw = json.load(f)
+                # normalize lexicon keys to lowercase for reliable matching
+                self.lexicon = {k.lower(): v for k, v in raw.items()}
             except Exception:
                 print("Warning: could not parse lexicon.json; ignoring.")
 
         # A non-exhaustive list of diphthongs that we want to consider as atomic units.
         # You can expand these to match the phonology of your language.
         self.diphthongs = [
-            "ai", "au", "ei", "oi", "ou", "ia", "ie", "io", "ua", "ue", "uo", "ei", "eu"
+            "ai", "au", "ei", "oi", "ou", "ia", "ie", "io", "ua", "ue", "uo", "eu"
         ]
 
         # A short list of common triphthongs (expand for your language as needed).
         self.triphthongs = ["iau", "uai", "eau", "iou"]
 
         # Onomatopoeia are words like "boom", "bang", "meow" that often should
-        # be treated as single units or mapped to special tokens. Keep this list
-        # in the lexicon for better control, but we also include a small builtin
-        # set as reasonable defaults for demonstration.
+        # be treated as single units or mapped to special tokens.
         self.onomatopoeia = set([
             "boom", "bang", "crash", "meow", "woof", "beep", "ding", "buzz", "hiss", "clack"
         ])
 
-        # Build the candidate token list used for greedy matching:
-        # 1) tokens present in DB (these are actual WAV token names like 'Ra3')
-        # 2) lexicon keys (words mapped to sequences)
-        tokens_from_db = sorted(db.available_tokens(), key=len, reverse=True)
+        # For greedy orthographic matching only use lexicon keys and vowel combos,
+        # NOT raw DB token names (those are not orthographic).
         lex_keys = sorted(self.lexicon.keys(), key=len, reverse=True)
-
-        # Combine all interesting items and sort longest-first for greedy matching.
-        # We include diphthongs/triphthongs explicitly so they can be matched even
-        # if they don't exist as tokens in the DB.
-        combined = list(tokens_from_db) + lex_keys + self.diphthongs + self.triphthongs + list(self.onomatopoeia)
+        combined = lex_keys + self.diphthongs + self.triphthongs + list(self.onomatopoeia)
         self.sorted_tokens = sorted(set(combined), key=len, reverse=True)
 
     def map_word(self, word: str):
         """
         Map a single orthographic word to a list of tokens.
         The algorithm:
-          - if the whole word is in the lexicon, return the lexicon mapping
+          - if the whole word (lowercased) is in the lexicon, return the lexicon mapping
           - otherwise perform longest-first greedy matching using sorted_tokens
-            so multi-character sequences (diphthongs/triphthongs/onomatopoeia)
-            are chosen before single letters
-          - if nothing matches a prefix, fall back to consuming one character
-            (this is a safety net so the mapping never loops forever)
+          - fallback: consume one character
         """
-        word = word.strip().lower()  # normalize to lowercase (lexicon should be lowercase too)
+        word = word.strip().lower()
         if not word:
-            return []                  # empty word -> empty token list
+            return []
 
         # if the whole word is in the lexicon, return that mapping (prefer exact entries)
         if word in self.lexicon:
             return list(self.lexicon[word])
 
         # If the word is a known onomatopoeic whole-word, treat it as a single unit.
-        # This allows "boom" to be preserved rather than split into 'b','oo','m'
         if word in self.onomatopoeia:
             return [word]
 
@@ -203,17 +209,13 @@ class TextToSyllableMapper:
         while remaining:
             matched = None
             for tok in self.sorted_tokens:
-                # We purposely compare lowercase substrings, so ensure tok is lowercase for matching:
                 if remaining.startswith(tok.lower()):
-                    matched = tok
-                    # If the matched candidate is a lexicon key (e.g., "thorough"),
-                    # expand it into the token sequence from the lexicon, otherwise
-                    # append the token name itself (e.g., "Ra3" or "ai").
-                    if tok in self.lexicon:
-                        result.extend(self.lexicon[tok])
+                    matched = tok.lower()
+                    if matched in self.lexicon:
+                        result.extend(self.lexicon[matched])
                     else:
-                        result.append(tok)
-                    remaining = remaining[len(tok):]  # consume matched portion
+                        result.append(tok.lower())
+                    remaining = remaining[len(tok):]
                     break
             if not matched:
                 # Fallback: consume one character (safe default). We use lowercased char.
@@ -227,7 +229,6 @@ class TextToSyllableMapper:
         We extract words with a regular expression to skip punctuation, then
         map each word individually and concatenate results.
         """
-        # Accept letters, numbers, hyphens and many accented letters (basic Unicode range).
         words = re.findall(r"[A-Za-z0-9\-\u00C0-\u024F]+", sentence)
         tokens = []
         for w in words:
@@ -385,6 +386,8 @@ def start_live_gui(synth: Synthesizer, mapper: TextToSyllableMapper):
     """
     Start a simple Tkinter GUI for live typing and playback.
     The GUI highlights diphthongs/triphthongs in red and beeps before highlighted tokens.
+    This variant inserts the first mapped token when clicking example orthographic keys,
+    so GUI button playback produces a single syllable (token) immediately.
     """
     import tkinter as tk  # local import so script can run in CLI-only environments
     import threading       # used to play audio off the main thread
@@ -422,7 +425,14 @@ def start_live_gui(synth: Synthesizer, mapper: TextToSyllableMapper):
     # helper to insert text into the box and play
     def insert_and_play_phrase(phrase_text: str):
         text.delete('1.0', 'end')          # clear previous text
-        text.insert('1.0', phrase_text)    # insert example phrase
+        key = phrase_text.lower()
+        # If lexicon has mapping, insert first token (plays single syllable)
+        if key in mapper.lexicon and mapper.lexicon[key]:
+            token_to_insert = mapper.lexicon[key][0]   # single token like "R-AA3"
+            text.insert('1.0', token_to_insert)
+        else:
+            # fallback: insert the original label (could be a token or orthographic key)
+            text.insert('1.0', phrase_text)
         highlight_diphthongs_triphthongs() # highlight multi-vowel combos
         play_text_later()                  # play the resulting sequence
 
@@ -480,6 +490,9 @@ def start_live_gui(synth: Synthesizer, mapper: TextToSyllableMapper):
             tokens = txt.split()                      # split on whitespace into explicit tokens
         else:
             tokens = mapper.map_sentence(txt)        # map orthographic sentence into tokens via mapper
+
+        # debug prints for clarity (temporary)
+        # print("DEBUG: mapped tokens:", tokens)
 
         unknowns = [t for t in tokens if synth.db.get(t) is None]  # tokens not present in DB
         if unknowns:

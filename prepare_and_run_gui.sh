@@ -8,6 +8,7 @@ DB_LINKS=./syllables_all_links
 MANIFEST_LEX=lexicon_from_manifests.json
 FILTERED_LEX=lexicon_filtered_all.json
 FILENAME_LEX=lexicon_from_filenames.json
+CANONICAL_LEX=lexicon_canonical.json
 
 echo "=== prepare_and_run_gui.sh - starting ==="
 
@@ -101,13 +102,27 @@ json.dump({k:sorted(list(set(v))) for k,v in lex.items()}, open("$FILENAME_LEX",
 print("Wrote $FILENAME_LEX with", len(lex), "entries")
 PY
 
+# 4.5) Build canonical lexicon (always prefer shortest single-syllable tokens)
+echo "--> Building canonical lexicon (one token per key) ..."
+if [ -f build_canonical_lexicon.py ]; then
+  python3 build_canonical_lexicon.py --db "$DB_LINKS" --lexicon "$FILTERED_LEX" --out "$CANONICAL_LEX"
+  if [ -f "$CANONICAL_LEX" ]; then
+    echo "  -> Canonical lexicon created: $CANONICAL_LEX"
+    FILTERED_LEX="$CANONICAL_LEX"
+  else
+    echo "  !! Canonical lexicon creation failed, falling back to filtered lexicon."
+  fi
+else
+  echo "  !! build_canonical_lexicon.py not found — skipping canonicalization."
+fi
+
 # 5) Summary
 echo "=== Summary ==="
 echo "DB folder: $DB_LINKS ($num_files files)"
 if [ -f "$FILTERED_LEX" ]; then
-  echo "Filtered manifest lexicon: $FILTERED_LEX (used by GUI command)"
+  echo "Canonical lexicon in use: $FILTERED_LEX (used by GUI command)"
 else
-  echo "Filtered manifest lexicon not found; falling back to filename lexicon: $FILENAME_LEX"
+  echo "Canonical lexicon not found; falling back to filename lexicon: $FILENAME_LEX"
   FILTERED_LEX="$FILENAME_LEX"
 fi
 echo "Launching GUI with: python3 tonal_tts_full.py --db $DB_LINKS --lexicon $FILTERED_LEX --gui"
