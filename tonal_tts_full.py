@@ -70,7 +70,7 @@ class SyllableUnit:
         avoids reading all WAV files at startup (helpful for large DBs).
         """
         if self.audio is None:
-            self.audio = AudioSegment.from_file(self.path)  # read file into memory
+            self.audio = AudioSegment.from_file(self.path, format="wav")
             self.duration_ms = len(self.audio)             # audio length in ms
 
 # --- Syllable database (collection of tokens) --------------------------------

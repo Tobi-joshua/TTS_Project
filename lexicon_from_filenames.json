@@ -8,8 +8,14 @@
   "ah": [
     "AH3"
   ],
+  "aab": [
+    "Aab3"
+  ],
   "aad3_aand": [
     "Aad3_aand3"
+  ],
+  "and": [
+    "And1"
   ],
   "b-ae-ng": [
     "B-AE-NG3"
@@ -40,25 +46,68 @@
   ],
   "bing": [
     "BING3",
+    "Bing2",
     "bing3"
   ],
   "boe": [
     "BOE1",
     "boe1"
   ],
+  "ba": [
+    "Ba1",
+    "Ba2"
+  ],
+  "ba2an": [
+    "Ba2an2"
+  ],
+  "ban": [
+    "Ban3"
+  ],
+  "be": [
+    "Be2",
+    "Be3",
+    "be1"
+  ],
+  "be2_": [
+    "Be2_1",
+    "Be2_2"
+  ],
+  "be2oo": [
+    "Be2oo2"
+  ],
+  "bi": [
+    "Bi1"
+  ],
+  "bi1i": [
+    "Bi1i2"
+  ],
+  "boen": [
+    "Boen2"
+  ],
   "bre": [
     "Bre2"
+  ],
+  "dat": [
+    "Dat3"
+  ],
+  "ee": [
+    "Ee2"
+  ],
+  "eyyn": [
+    "Eyyn2"
   ],
   "f-ow": [
     "F-OW1"
   ],
   "fo": [
     "FO1",
-    "Fo1"
+    "Fo1",
+    "Fo3"
   ],
   "fu": [
     "FU1",
-    "Fu1"
+    "Fu1",
+    "Fu3"
   ],
   "g-ae-n": [
     "G-AE-N3"
@@ -69,16 +118,63 @@
   "ga": [
     "GA1",
     "GA2",
+    "Ga1",
+    "Ga2",
+    "Ga3",
     "ga1",
     "ga2"
   ],
   "ga2_": [
     "GA2_1",
+    "Ga2_1",
+    "Ga2_2",
     "ga2_1"
   ],
   "gan": [
     "GAN3",
+    "Gan1",
+    "Gan2",
     "gan3"
+  ],
+  "ga1_": [
+    "Ga1_1",
+    "Ga1_2",
+    "Ga1_3",
+    "Ga1_4"
+  ],
+  "ga1_1_": [
+    "Ga1_1_1"
+  ],
+  "ga3_": [
+    "Ga3_1",
+    "Ga3_2"
+  ],
+  "gan1_": [
+    "Gan1_1"
+  ],
+  "gan2_": [
+    "Gan2_1",
+    "Gan2_2"
+  ],
+  "gen": [
+    "Gen2"
+  ],
+  "gey": [
+    "Gey3"
+  ],
+  "go": [
+    "Go1",
+    "Go3"
+  ],
+  "gu": [
+    "Gu1",
+    "gu3"
+  ],
+  "gu1_": [
+    "Gu1_1"
+  ],
+  "gu3i": [
+    "Gu3i2"
   ],
   "k-aa-m": [
     "K-AA-M1"
@@ -88,6 +184,7 @@
   ],
   "ka": [
     "KA1",
+    "Ka3",
     "ka1"
   ],
   "kaagr": [
@@ -100,15 +197,22 @@
   ],
   "kan": [
     "KAN3",
+    "Kan1",
+    "Kan2",
     "kan3"
   ],
   "ku": [
     "KU1",
+    "Ku2",
     "ku1"
   ],
   "kud": [
     "KUD2",
+    "Kud2",
     "kud2"
+  ],
+  "ka1angr": [
+    "Ka1angr2"
   ],
   "l-aa-g": [
     "L-AA-G3"
@@ -118,47 +222,103 @@
   ],
   "la": [
     "LA1",
+    "La1",
+    "La2",
     "la1"
   ],
   "lam": [
     "LAM1",
+    "Lam3",
     "lam1"
   ],
   "log": [
     "LOG3",
+    "Log1",
     "Log3"
   ],
   "lam3_practice_1_expression_en_moore_madame_zongo_mono.unknown": [
     "Lam3_Practice_1_EXPRESSION_EN_MOORE_MADAME_ZONGO_mono.unknown"
+  ],
+  "lan": [
+    "Lan1",
+    "Lan2"
+  ],
+  "leb": [
+    "Leb1"
+  ],
+  "len": [
+    "Len2"
+  ],
+  "lu1i": [
+    "Lu1i2"
   ],
   "m-iy": [
     "M-IY3"
   ],
   "mam": [
     "MAM2",
-    "Mam2"
+    "Mam2",
+    "Mam3"
+  ],
+  "mam2_": [
+    "Mam2_1"
+  ],
+  "man": [
+    "Man1"
+  ],
+  "men": [
+    "Men1"
   ],
   "men3_me": [
     "Men3_me3"
   ],
   "mi": [
+    "Mi2",
     "Mi3"
+  ],
+  "mi2uu": [
+    "Mi2uu2"
   ],
   "n": [
     "N1",
+    "N2",
     "n1"
+  ],
+  "n2_": [
+    "N2_1",
+    "N2_2",
+    "N2_3",
+    "N2_4"
   ],
   "nen": [
     "NEN1",
+    "Nen2",
     "nen1"
   ],
   "nisr": [
     "NISR1",
+    "Nisr2",
     "nisr1"
   ],
   "nug": [
     "NUG1",
+    "Nug3",
     "nug1"
+  ],
+  "nif": [
+    "Nif2"
+  ],
+  "nim": [
+    "Nim2"
+  ],
+  "nun": [
+    "Nun2"
+  ],
+  "ol": [
+    "Ol2"
+  ],
+  "oo": [
+    "Oo2"
   ],
   "p-uw-ao-l": [
     "P-UW-AO-L1"
@@ -168,6 +328,8 @@
   ],
   "pa": [
     "PA1",
+    "Pa2",
+    "Pa3",
     "pa1"
   ],
   "paa": [
@@ -185,6 +347,24 @@
   "puug": [
     "PUUG1",
     "Puug1"
+  ],
+  "pa2_": [
+    "Pa2_1"
+  ],
+  "pa2a": [
+    "Pa2a2"
+  ],
+  "pa2ol": [
+    "Pa2ol2"
+  ],
+  "pu": [
+    "Pu3"
+  ],
+  "pu3us": [
+    "Pu3us2"
+  ],
+  "pug": [
+    "Pug2"
   ],
   "r-aa": [
     "R-AA1",
@@ -207,19 +387,45 @@
   ],
   "rib": [
     "RIB1",
+    "Rib3",
     "rib1"
   ],
   "ra": [
+    "Ra1",
     "Ra3",
     "ra1",
     "ra3"
   ],
+  "ra1_": [
+    "Ra1_1",
+    "Ra1_2"
+  ],
   "ra3_": [
     "Ra3_1",
-    "Ra3_2"
+    "Ra3_2",
+    "Ra3_3"
   ],
   "ra3_expression_en_moore_madame_zongo_mono.unknown": [
     "Ra3_EXPRESSION_EN_MOORE_MADAME_ZONGO_mono.unknown"
+  ],
+  "rab": [
+    "Rab3"
+  ],
+  "ran": [
+    "Ran1",
+    "Ran2"
+  ],
+  "re": [
+    "Re3"
+  ],
+  "re3e": [
+    "Re3e2"
+  ],
+  "ren": [
+    "Ren2"
+  ],
+  "runm": [
+    "Runm1"
   ],
   "s-iy": [
     "S-IY3"
@@ -228,8 +434,23 @@
     "SI3",
     "Si3"
   ],
+  "sa3an": [
+    "Sa3an2"
+  ],
+  "sag": [
+    "Sag1"
+  ],
   "san": [
     "San"
+  ],
+  "san2ag2_": [
+    "San2ag2_1"
+  ],
+  "san3an": [
+    "San3an2"
+  ],
+  "se3e": [
+    "Se3e2"
   ],
   "sentence_": [
     "Sentence_1",
@@ -248,6 +469,9 @@
     "Sentence_8",
     "Sentence_9"
   ],
+  "sid": [
+    "Sid2"
+  ],
   "t-iy": [
     "T-IY1"
   ],
@@ -256,15 +480,27 @@
   ],
   "ta": [
     "TA2",
+    "Ta1",
+    "Ta2",
     "ta2"
   ],
   "to": [
     "TO1",
+    "To3",
     "to1"
   ],
+  "tan": [
+    "Tan2"
+  ],
   "ti": [
+    "Ti1",
     "Ti3",
     "ti1"
+  ],
+  "ti3_": [
+    "Ti3_1",
+    "Ti3_2",
+    "Ti3_3"
   ],
   "ti3_practice_1_expression_en_moore_madame_zongo_mono.unknown": [
     "Ti3_Practice_1_EXPRESSION_EN_MOORE_MADAME_ZONGO_mono.unknown"
@@ -272,9 +508,28 @@
   "uw": [
     "UW1"
   ],
+  "uu": [
+    "Uu2",
+    "uu1"
+  ],
+  "uu2_": [
+    "Uu2_1"
+  ],
   "vii": [
     "VII1",
     "Vii1"
+  ],
+  "vi": [
+    "Vi3"
+  ],
+  "vi3uu2_": [
+    "Vi3uu2_1"
+  ],
+  "vun": [
+    "Vun1"
+  ],
+  "vun2ug": [
+    "Vun2ug2"
   ],
   "w-aa": [
     "W-AA1"
@@ -288,6 +543,7 @@
   ],
   "weng": [
     "WENG1",
+    "Weng3",
     "weng1"
   ],
   "wuu": [
@@ -296,13 +552,29 @@
   ],
   "wa": [
     "Wa",
+    "Wa1",
+    "Wa2",
     "wa1"
+  ],
+  "wa1a": [
+    "Wa1a3"
   ],
   "wa1a3_practice_1_expression_en_moore_madame_zongo_mono.unknown": [
     "Wa1a3_Practice_1_EXPRESSION_EN_MOORE_MADAME_ZONGO_mono.unknown"
   ],
   "wan": [
-    "Wan"
+    "Wan",
+    "Wan1",
+    "Wan2"
+  ],
+  "wan_": [
+    "Wan_1"
+  ],
+  "wun": [
+    "Wun2"
+  ],
+  "wus": [
+    "Wus3"
   ],
   "wusg": [
     "Wusg2"
@@ -321,21 +593,56 @@
     "YEE1",
     "yee1"
   ],
+  "ya2a": [
+    "Ya2a2"
+  ],
+  "ya3a": [
+    "Ya3a2"
+  ],
+  "ya3a2_": [
+    "Ya3a2_1"
+  ],
+  "ya3an": [
+    "Ya3an2"
+  ],
+  "ye": [
+    "Ye1"
+  ],
+  "ye1e": [
+    "Ye1e1"
+  ],
   "ye1e1_practice_1_expression_en_moore_madame_zongo_mono.unknown": [
     "Ye1e1_Practice_1_EXPRESSION_EN_MOORE_MADAME_ZONGO_mono.unknown"
   ],
   "yi": [
     "Yi3"
   ],
+  "yi3_": [
+    "Yi3_1"
+  ],
+  "yo": [
+    "Yo1"
+  ],
+  "yo1aab": [
+    "Yo1aab3"
+  ],
+  "yor": [
+    "Yor2"
+  ],
+  "yu3ug": [
+    "Yu3ug2"
+  ],
   "z-ae-k": [
     "Z-AE-K1"
   ],
   "zaabr": [
     "ZAABR1",
+    "Zaabr2",
     "zaabr1"
   ],
   "zak": [
     "ZAK1",
+    "Zak2",
     "zak1"
   ],
   "za1a": [
@@ -344,20 +651,20 @@
   "za1a1_zaabre": [
     "Za1a1_zaabre0"
   ],
+  "zo": [
+    "Zo3"
+  ],
+  "zo3ee": [
+    "Zo3ee2"
+  ],
+  "zom": [
+    "Zom2"
+  ],
   "aad": [
     "aad1"
   ],
-  "be": [
-    "be1"
-  ],
-  "gu": [
-    "gu3"
-  ],
   "ti1_": [
     "ti1_1"
-  ],
-  "uu": [
-    "uu1"
   ],
   "wa1_": [
     "wa1_1"
