@@ -1,17 +1,18 @@
+#!/usr/bin/env python3
 """
-map_to_arpabet.py (updated)
+map_to_arpabet.py (fully updated)
 
-Copies ARPABET-named WAVs and creates a manifest.csv directly inside each Sentence folder.
-Uses `Sentence X/Arpabet Transcription/` when present (preferred with --use-arpabet),
-otherwise falls back to `Sentence X/extracted_labels/` using an optional mapping JSON.
-
-Additional behavior:
- - Optionally deletes existing per-sentence manifest.csv files before processing (default: delete).
- - Creates/clears a central manifests folder and copies each generated manifest into it.
+- Copies / converts ARPABET-named audio files into each Sentence folder (no arpabet_db/).
+- Writes SentenceX/manifest.csv (overwrites by default).
+- Deletes existing per-sentence manifest.csv files by default (use --no-delete-existing to keep).
+  Now deletion is recursive: any manifest.csv under Sentence folder (any subdir) will be removed.
+- Creates/clears a central manifests folder (--manifests-dir, default ./manifests) and copies each per-sentence manifest into it.
+- Converts non-WAV sources (e.g. MP3 or mislabeled files) to valid PCM WAV using ffmpeg if available,
+  otherwise falls back to soundfile read/write (best-effort). If conversion not possible, will copy raw data and warn.
 
 USAGE:
   python3 map_to_arpabet.py ./syllables --map arpabet_map.json --all --use-arpabet
-  python3 map_to_arpabet.py ./syllables --from 1 --to 100 --manifests-dir ./manifests
+  python3 map_to_arpabet.py ./syllables --from 1 --to 100 --manifests-dir ./manifests --no-delete-existing
 """
 import os
 import sys
@@ -20,6 +21,7 @@ import argparse
 import csv
 import shutil
 import re
+import subprocess
 from pathlib import Path
 import soundfile as sf
 
@@ -68,18 +70,82 @@ def make_arpabet_filename_from_parts(parts, mapping):
     final_stem = "_".join(syllable_strings)
     return final_stem, unmapped
 
-def safe_write_wav_copy(src_wav_path, dst_wav_path):
-    # If src and dst are identical paths, skip
+def is_valid_wav(path):
+    """
+    Quick check of RIFF/WAVE header. Returns True if file looks like a WAV file.
+    """
+    try:
+        with open(path, "rb") as f:
+            hdr = f.read(12)
+            if len(hdr) < 12:
+                return False
+            if hdr[0:4] == b'RIFF' and hdr[8:12] == b'WAVE':
+                return True
+            return False
+    except Exception:
+        return False
+
+def safe_write_wav_copy(src_wav_path, dst_wav_path, convert=True):
+    """
+    Copy or convert src -> dst as a valid PCM WAV file.
+
+    Behavior:
+      - if src is already a valid RIFF/WAVE file, do shutil.copy2
+      - else if convert True: try to convert using ffmpeg
+      - if ffmpeg fails or not available, try to load with soundfile and write PCM_16 WAV (best-effort)
+      - if all else fails, copy raw file and warn (may be invalid)
+    """
+    # if identical paths, skip
     try:
         if os.path.abspath(src_wav_path) == os.path.abspath(dst_wav_path):
             return
     except Exception:
         pass
+
+    # If source already looks like a WAV, just copy
+    if is_valid_wav(src_wav_path):
+        try:
+            shutil.copy2(src_wav_path, dst_wav_path)
+            return
+        except Exception:
+            # fall through to conversion attempt if copy fails
+            pass
+
+    if convert:
+        # Try converting with ffmpeg (preserve sample rate/channels defaults to 44100/mono)
+        ffmpeg_cmd = [
+            "ffmpeg", "-y", "-nostdin", "-loglevel", "error",
+            "-i", src_wav_path,
+            "-ar", "44100", "-ac", "1", "-f", "wav", dst_wav_path
+        ]
+        try:
+            proc = subprocess.run(ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            if proc.returncode == 0 and os.path.isfile(dst_wav_path) and is_valid_wav(dst_wav_path):
+                # success
+                return
+            else:
+                print(f"[WARN] ffmpeg conversion failed for '{src_wav_path}' -> '{dst_wav_path}'; rc={proc.returncode}")
+        except FileNotFoundError:
+            print("[WARN] ffmpeg not found on PATH; attempting python-based fallback (may not support MP3).")
+        except Exception as e:
+            print(f"[WARN] ffmpeg conversion exception for '{src_wav_path}': {e}")
+
+    # Fallback: try reading/writing with soundfile (works for some formats)
     try:
-        shutil.copy2(src_wav_path, dst_wav_path)
-    except Exception:
         data, sr = sf.read(src_wav_path)
         sf.write(dst_wav_path, data, sr, subtype="PCM_16")
+        if is_valid_wav(dst_wav_path):
+            return
+    except Exception as e:
+        print(f"[WARN] soundfile fallback failed for '{src_wav_path}': {e}")
+
+    # Last resort: attempt raw copy (keeps data but may be wrong format)
+    try:
+        shutil.copy2(src_wav_path, dst_wav_path)
+        print(f"[WARN] wrote raw copy {dst_wav_path} (file may not be valid WAV)")
+    except Exception as e:
+        print(f"[ERROR] failed to copy or convert '{src_wav_path}' -> '{dst_wav_path}': {e}")
+        raise
 
 def make_unique_path(dst_base):
     """
@@ -167,7 +233,6 @@ def sanitize_manifest_destname(root, dirpath):
     """
     Produce a filesystem-safe filename for a manifest copy based on the directory path.
     Example: root=./syllables, dirpath=./syllables/Sentence 1 -> 'Sentence_1_manifest.csv'
-    For deeper paths replace os.sep with '_' and remove unsafe chars.
     """
     rel = os.path.relpath(dirpath, root)
     if rel == ".":
@@ -183,7 +248,7 @@ def sanitize_manifest_destname(root, dirpath):
 # ---------------------------
 # Processing functions
 # ---------------------------
-def process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=True):
+def process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=True, convert=True):
     arpa_dir = os.path.join(sentence_folder, "Arpabet Transcription")
     if not os.path.isdir(arpa_dir):
         if verbose:
@@ -210,10 +275,9 @@ def process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=Tr
         dst = make_unique_path(dst)
 
         try:
-            safe_write_wav_copy(src, dst)
-            status = "OK"
+            safe_write_wav_copy(src, dst, convert=convert)
         except Exception as e:
-            status = f"FAILED:{e}"
+            print(f"[WARN] failed to write '{src}' -> '{dst}': {e}")
 
         parsed_label_parts = parse_label_into_syllables(orig_label)
         parsed_str = ";".join(f"{a}/{b if b else '2'}" for a,b in parsed_label_parts) if parsed_label_parts else ""
@@ -254,17 +318,17 @@ def process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=Tr
         print(f"[DONE] Wrote manifest to {manifest_path}")
     return True
 
-def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, verbose=True):
+def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, verbose=True, convert=True):
     extracted_dir = os.path.join(sentence_folder, "extracted_labels")
     if not os.path.isdir(extracted_dir):
         if verbose:
             print(f"[INFO] No extracted_labels in {sentence_folder}")
         return False
 
-    wavs = [f for f in os.listdir(extracted_dir) if f.lower().endswith(".wav")]
+    wavs = [f for f in os.listdir(extracted_dir) if f.lower().endswith(".wav") or f.lower().endswith(".mp3") or f.lower().endswith(".mp4") or f.lower().endswith(".m4a")]
     if not wavs:
         if verbose:
-            print(f"[INFO] No WAVs in extracted_labels for {sentence_folder}")
+            print(f"[INFO] No WAV/MP3s in extracted_labels for {sentence_folder}")
         return False
 
     manifest_rows = []
@@ -276,7 +340,10 @@ def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, v
             # write UNPARSED copy
             dst_name = f"UNPARSED_{stem}.wav"
             dst = make_unique_path(os.path.join(sentence_folder, dst_name))
-            safe_write_wav_copy(src, dst)
+            try:
+                safe_write_wav_copy(src, dst, convert=convert)
+            except Exception as e:
+                print(f"[WARN] failed to write UNPARSED '{src}' -> '{dst}': {e}")
             manifest_rows.append({
                 "orig": wav_name,
                 "parsed": "",
@@ -293,10 +360,9 @@ def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, v
         dst = make_unique_path(os.path.join(sentence_folder, dst_name))
 
         try:
-            safe_write_wav_copy(src, dst)
-            status = "OK"
+            safe_write_wav_copy(src, dst, convert=convert)
         except Exception as e:
-            status = f"FAILED:{e}"
+            print(f"[WARN] failed to write '{src}' -> '{dst}': {e}")
 
         manifest_rows.append({
             "orig": wav_name,
@@ -324,14 +390,14 @@ def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, v
 # ---------------------------
 # Main loop
 # ---------------------------
-def process_one_sentence(sentence_folder, mapping, use_arpabet=False, verbose=True):
+def process_one_sentence(sentence_folder, mapping, use_arpabet=False, verbose=True, convert=True):
     # 1) try Arpabet Transcription if requested
     if use_arpabet:
-        used = process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=verbose)
+        used = process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=verbose, convert=convert)
         if used:
             return
     # 2) fallback to extracted_labels mapping
-    used2 = process_from_extracted_labels_into_sentence(sentence_folder, mapping=mapping, verbose=verbose)
+    used2 = process_from_extracted_labels_into_sentence(sentence_folder, mapping=mapping, verbose=verbose, convert=convert)
     if used2:
         return
     # nothing done
@@ -339,7 +405,7 @@ def process_one_sentence(sentence_folder, mapping, use_arpabet=False, verbose=Tr
         print(f"[SKIP] No transcription or extracted_labels to process in {sentence_folder}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Map labeled syllable WAVs to ARPABET filenames and write manifest.csv directly into Sentence folders.")
+    parser = argparse.ArgumentParser(description="Map labeled syllable audio to ARPABET filenames and write manifest.csv directly into Sentence folders.")
     parser.add_argument("root", help="Root folder containing Sentence folders (e.g. ./syllables)")
     parser.add_argument("--map", help="Path to JSON mapping file (default: arpabet_map.json)", default="arpabet_map.json")
     parser.add_argument("--from", dest="from_idx", type=int, default=None)
@@ -348,12 +414,14 @@ def main():
     parser.add_argument("--use-arpabet", action="store_true", help="If Arpabet Transcription exists, use it.")
     parser.add_argument("--manifests-dir", default="./manifests", help="Directory to collect per-sentence manifests into (will be cleared/created)")
     parser.add_argument("--no-delete-existing", action="store_true", help="Do NOT delete existing manifest.csv files in Sentence folders before processing")
+    parser.add_argument("--no-convert", action="store_true", help="Do NOT attempt conversion; only copy files as-is (danger: invalid formats may remain)")
     args = parser.parse_args()
 
     root = args.root
     map_path = args.map
     manifests_dir = args.manifests_dir
     delete_existing = not args.no_delete_existing
+    convert = not args.no_convert
 
     if not os.path.isdir(root):
         print("[ERR] Root does not exist:", root)
@@ -389,17 +457,18 @@ def main():
         print("[ERR] No Sentence folders to process. Exiting.")
         sys.exit(1)
 
-    # Delete existing per-sentence manifest.csv files if requested
+    # Recursively delete existing per-sentence manifest.csv files if requested
     if delete_existing:
-        print("[INFO] Deleting existing manifest.csv files in Sentence folders (if present)...")
+        print("[INFO] Recursively deleting existing manifest.csv files under each Sentence folder (if present)...")
         for f in folders:
-            mf = os.path.join(f, "manifest.csv")
-            try:
-                if os.path.isfile(mf):
-                    os.remove(mf)
-                    print(f"  -> removed {mf}")
-            except Exception as e:
-                print(f"  [WARN] failed to remove {mf}: {e}")
+            for dirpath, dirnames, filenames in os.walk(f):
+                if "manifest.csv" in filenames:
+                    mf = os.path.join(dirpath, "manifest.csv")
+                    try:
+                        os.remove(mf)
+                        print(f"  -> removed {mf}")
+                    except Exception as e:
+                        print(f"  [WARN] failed to remove {mf}: {e}")
 
     # Prepare manifests_dir: clear/create
     try:
@@ -414,9 +483,9 @@ def main():
     # process each sentence; after processing, copy manifest into manifests_dir
     for f in folders:
         print(f"[INFO] Processing {f} ...")
-        process_one_sentence(f, mapping, use_arpabet=args.use_arpabet, verbose=True)
+        process_one_sentence(f, mapping, use_arpabet=args.use_arpabet, verbose=True, convert=convert)
 
-        # copy manifest if it exists
+        # copy manifest if it exists (only top-level manifest.csv is copied)
         src_manifest = os.path.join(f, "manifest.csv")
         if os.path.isfile(src_manifest):
             dst_name = sanitize_manifest_destname(root, f)
@@ -427,7 +496,22 @@ def main():
             except Exception as e:
                 print(f"  [WARN] failed to copy manifest {src_manifest} -> {dst}: {e}")
         else:
-            print(f"  -> no manifest generated in {f} (skipping copy)")
+            # if no top-level manifest, search for any manifest.csv under the sentence folder and copy the first one found
+            found = False
+            for dirpath, dirnames, filenames in os.walk(f):
+                if "manifest.csv" in filenames:
+                    src_manifest = os.path.join(dirpath, "manifest.csv")
+                    dst_name = sanitize_manifest_destname(root, f)
+                    dst = os.path.join(manifests_dir, dst_name)
+                    try:
+                        shutil.copy2(src_manifest, dst)
+                        print(f"  -> copied nested manifest {src_manifest} -> {dst}")
+                    except Exception as e:
+                        print(f"  [WARN] failed to copy nested manifest {src_manifest} -> {dst}: {e}")
+                    found = True
+                    break
+            if not found:
+                print(f"  -> no manifest generated in {f} (skipping copy)")
 
     print(f"[DONE] All done. Per-sentence manifests copied to: {manifests_dir}")
 

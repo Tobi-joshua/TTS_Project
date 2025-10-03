@@ -1,503 +1,503 @@
 {
   "fu": [
-    "FU3_2",
-    "FU3_3"
+    "FU3_4",
+    "FU3_5"
   ],
   "gan": [
-    "GAN1_2",
-    "GAN1_3",
-    "GAN2_2",
-    "GAN2_3",
-    "R-AA-N1_2",
-    "R-AA-N1_3",
-    "R-AA-N2_2",
-    "R-AA-N2_3"
+    "GAN1_4",
+    "GAN1_5",
+    "GAN2_4",
+    "GAN2_5",
+    "R-AA-N1_4",
+    "R-AA-N1_5",
+    "R-AA-N2_4",
+    "R-AA-N2_5"
   ],
   "gu": [
-    "G-UH3_IH2_2",
-    "G-UH3_IH2_3",
-    "G-UW1_2",
-    "G-UW1_3",
-    "GU1_2",
-    "GU1_3"
+    "G-UH3_IH2_4",
+    "G-UH3_IH2_5",
+    "G-UW1_4",
+    "G-UW1_5",
+    "GU1_4",
+    "GU1_5"
   ],
   "mi": [
-    "M-IH3_2",
-    "M-IH3_3",
-    "MI2UU22_2",
-    "MI2UU22_3",
-    "MI2_2",
-    "MI2_3"
+    "M-IH3_4",
+    "M-IH3_5",
+    "MI2UU22_4",
+    "MI2UU22_5",
+    "MI2_4",
+    "MI2_5"
   ],
   "sentence": [
-    "SENTENCE10_2",
-    "SENTENCE10_3",
-    "SENTENCE11_2",
-    "SENTENCE11_3",
-    "SENTENCE12_2",
-    "SENTENCE12_3",
-    "SENTENCE13_2",
-    "SENTENCE13_3",
-    "SENTENCE14_2",
-    "SENTENCE14_3",
-    "SENTENCE15_2",
-    "SENTENCE15_3",
-    "SENTENCE1_1",
-    "SENTENCE2_2",
-    "SENTENCE2_3",
-    "SENTENCE3_2",
-    "SENTENCE3_3",
-    "SENTENCE4_2",
-    "SENTENCE4_3",
-    "SENTENCE5_2",
-    "SENTENCE5_3",
-    "SENTENCE6_2",
-    "SENTENCE6_3",
-    "SENTENCE7_2",
-    "SENTENCE7_3",
-    "SENTENCE8_2",
-    "SENTENCE8_3",
-    "SENTENCE9_2",
-    "SENTENCE9_3"
+    "SENTENCE10_4",
+    "SENTENCE10_5",
+    "SENTENCE11_4",
+    "SENTENCE11_5",
+    "SENTENCE12_4",
+    "SENTENCE12_5",
+    "SENTENCE13_4",
+    "SENTENCE13_5",
+    "SENTENCE14_4",
+    "SENTENCE14_5",
+    "SENTENCE15_4",
+    "SENTENCE15_5",
+    "SENTENCE1_2",
+    "SENTENCE2_4",
+    "SENTENCE2_5",
+    "SENTENCE3_4",
+    "SENTENCE3_5",
+    "SENTENCE4_4",
+    "SENTENCE4_5",
+    "SENTENCE5_4",
+    "SENTENCE5_5",
+    "SENTENCE6_4",
+    "SENTENCE6_5",
+    "SENTENCE7_4",
+    "SENTENCE7_5",
+    "SENTENCE8_4",
+    "SENTENCE8_5",
+    "SENTENCE9_4",
+    "SENTENCE9_5"
   ],
   "uu": [
-    "UU2_2",
-    "UU2_3",
-    "UW-UW2_2",
-    "UW-UW2_3"
+    "UU2_4",
+    "UU2_5",
+    "UW-UW2_4",
+    "UW-UW2_5"
   ],
   "ya": [
-    "Y-AA2_AA2_2",
-    "Y-AA2_AA2_3",
-    "Y-AA3_AA-N2_2",
-    "Y-AA3_AA-N2_3",
-    "YA3A22_2",
-    "YA3A22_3",
-    "YAA3AA22_2",
-    "YAA3AA22_3"
+    "Y-AA2_AA2_4",
+    "Y-AA2_AA2_5",
+    "Y-AA3_AA-N2_4",
+    "Y-AA3_AA-N2_5",
+    "YA3A22_4",
+    "YA3A22_5",
+    "YAA3AA22_4",
+    "YAA3AA22_5"
   ],
   "yor": [
-    "YOR2_2",
-    "YOR2_3"
+    "YOR2_4",
+    "YOR2_5"
   ],
   "and": [
-    "AA-N-D1_2",
-    "AA-N-D1_3"
+    "AA-N-D1_4",
+    "AA-N-D1_5"
   ],
   "ban": [
-    "B3_2",
-    "B3_3"
+    "B3_4",
+    "B3_5"
   ],
   "ga": [
-    "G-A1_2",
-    "G-A1_3",
-    "G-AA-N3_2",
-    "G-AA-N3_3",
-    "G-AA1_2",
-    "G-AA1_3",
-    "G-AA2_2",
-    "G-AA2_3",
-    "G-AA3_2",
-    "G-AA3_3",
-    "G-AE1_2",
-    "G-AE1_3",
-    "G-W-EH-N1_2",
-    "G-W-EH-N1_3",
-    "G-W-UH-A2_2",
-    "G-W-UH-A2_3",
-    "GA2_2",
-    "GA2_3",
-    "R-A3_2",
-    "R-A3_3",
-    "R-AH1_1"
+    "G-A1_4",
+    "G-A1_5",
+    "G-AA-N3_4",
+    "G-AA-N3_5",
+    "G-AA1_4",
+    "G-AA1_5",
+    "G-AA2_4",
+    "G-AA2_5",
+    "G-AA3_4",
+    "G-AA3_5",
+    "G-AE1_4",
+    "G-AE1_5",
+    "G-W-EH-N1_4",
+    "G-W-EH-N1_5",
+    "G-W-UH-A2_4",
+    "G-W-UH-A2_5",
+    "GA2_4",
+    "GA2_5",
+    "R-A3_4",
+    "R-A3_5",
+    "R-AH1_2"
   ],
   "vi": [
-    "V-IH3_2",
-    "V-IH3_3",
-    "V-IH3_UW-UW2_2",
-    "V-IH3_UW-UW2_3"
+    "V-IH3_4",
+    "V-IH3_5",
+    "V-IH3_UW-UW2_4",
+    "V-IH3_UW-UW2_5"
   ],
   "zom": [
-    "Z-OW-M2_2",
-    "Z-OW-M2_3"
+    "Z-OW-M2_4",
+    "Z-OW-M2_5"
   ],
   "bang": [
-    "BANG3_3",
-    "BANG3_4"
+    "BANG3_5",
+    "BANG3_6"
   ],
   "be": [
-    "B-EY2_2",
-    "B-EY2_3",
-    "B-EY2_OW2_OW2_2",
-    "B-EY2_OW2_OW2_3",
-    "B-EY3_2",
-    "B-EY3_3",
-    "BE2_2",
-    "BE2_3"
+    "B-EY2_4",
+    "B-EY2_5",
+    "B-EY2_OW2_OW2_4",
+    "B-EY2_OW2_OW2_5",
+    "B-EY3_4",
+    "B-EY3_5",
+    "BE2_4",
+    "BE2_5"
   ],
   "boen": [
-    "BOEN2_2",
-    "BOEN2_3"
+    "BOEN2_4",
+    "BOEN2_5"
   ],
   "n": [
-    "N2_3",
-    "N2_4",
-    "N2_N22_2",
-    "N2_N22_3"
+    "N2_5",
+    "N2_6",
+    "N2_N22_4",
+    "N2_N22_5"
   ],
   "se": [
-    "SE3E22_2",
-    "SE3E22_3"
+    "SE3E22_4",
+    "SE3E22_5"
   ],
   "tan": [
-    "TAN2_2",
-    "TAN2_3"
+    "TAN2_4",
+    "TAN2_5"
   ],
   "ba": [
-    "B-AA1_2",
-    "B-AA1_3",
-    "B-AA2_2",
-    "B-AA2_3",
-    "B-AA2_AA-N2_2",
-    "B-AA2_AA-N2_3"
+    "B-AA1_4",
+    "B-AA1_5",
+    "B-AA2_4",
+    "B-AA2_5",
+    "B-AA2_AA-N2_4",
+    "B-AA2_AA-N2_5"
   ],
   "go": [
-    "D-R-AW3_2",
-    "D-R-AW3_3",
-    "G-OW1_2",
-    "G-OW1_3"
+    "D-R-AW3_4",
+    "D-R-AW3_5",
+    "G-OW1_4",
+    "G-OW1_5"
   ],
   "ee": [
-    "EY-EY2_2",
-    "EY-EY2_3"
+    "EY-EY2_4",
+    "EY-EY2_5"
   ],
   "kan": [
-    "K-AA-N1_2",
-    "K-AA-N1_3",
-    "K-AA-N2_2",
-    "K-AA-N2_3"
+    "K-AA-N1_4",
+    "K-AA-N1_5",
+    "K-AA-N2_4",
+    "K-AA-N2_5"
   ],
   "nim": [
-    "N-IH-M2_2",
-    "N-IH-M2_3"
+    "N-IH-M2_4",
+    "N-IH-M2_5"
   ],
   "ra": [
-    "R-AA-2_2",
-    "R-AA-2_3",
-    "R-AA1_2",
-    "R-AA1_3",
-    "R-AA3_2"
+    "R-AA-2_4",
+    "R-AA-2_5",
+    "R-AA1_4",
+    "R-AA1_5",
+    "R-AA3_3"
   ],
   "ran": [
-    "R-AA-N2_2",
-    "R-AA-N2_3",
-    "R-AE-N1_2",
-    "R-AE-N1_3"
+    "R-AA-N2_4",
+    "R-AA-N2_5",
+    "R-AE-N1_4",
+    "R-AE-N1_5"
   ],
   "weng": [
-    "W-EH-NG3_2",
-    "W-EH-NG3_3"
+    "W-EH-NG3_4",
+    "W-EH-NG3_5"
   ],
   "wus": [
-    "W-UW-S3_2",
-    "W-UW-S3_3"
+    "W-UW-S3_4",
+    "W-UW-S3_5"
   ],
   "zo": [
-    "ZWEY3EYEY22_2",
-    "ZWEY3EYEY22_3",
-    "ZWEY3_2",
-    "ZWEY3_3"
+    "ZWEY3EYEY22_4",
+    "ZWEY3EYEY22_5",
+    "ZWEY3_4",
+    "ZWEY3_5"
   ],
   "bi": [
-    "B-IY1_3",
-    "B-IY1_4",
-    "B-IY1_IY2_2",
-    "B-IY1_IY2_3"
+    "B-IY1_5",
+    "B-IY1_6",
+    "B-IY1_IY2_4",
+    "B-IY1_IY2_5"
   ],
   "log": [
-    "L-AW-G1_2",
-    "L-AW-G1_3"
+    "L-AW-G1_4",
+    "L-AW-G1_5"
   ],
   "pa": [
-    "P-AA2_2",
-    "P-AA2_3",
-    "P-AA2_AA2_2",
-    "P-AA2_AA2_3",
-    "P-AA3_2",
-    "P-AA3_3",
-    "PA2OL22_2",
-    "PA2OL22_3",
-    "PA2_2",
-    "PA2_3"
+    "P-AA2_4",
+    "P-AA2_5",
+    "P-AA2_AA2_4",
+    "P-AA2_AA2_5",
+    "P-AA3_4",
+    "P-AA3_5",
+    "PA2OL22_4",
+    "PA2OL22_5",
+    "PA2_4",
+    "PA2_5"
   ],
   "ren": [
-    "R-EH-N2_2",
-    "R-EH-N2_3"
+    "R-EH-N2_4",
+    "R-EH-N2_5"
   ],
   "to": [
-    "T-AW3_2",
-    "T-AW3_3"
+    "T-AW3_4",
+    "T-AW3_5"
   ],
   "ti": [
-    "T-IH1_2",
-    "T-IH1_3",
-    "T-IH3_1",
+    "T-IH1_4",
+    "T-IH1_5",
     "T-IH3_2",
-    "T-IH3_3",
-    "T-IY2_1"
+    "T-IH3_4",
+    "T-IH3_5",
+    "T-IY2_2"
   ],
   "aab": [
-    "AA-AA-B3_2",
-    "AA-AA-B3_3"
+    "AA-AA-B3_4",
+    "AA-AA-B3_5"
   ],
   "bing": [
-    "B-IY-NG2_2",
-    "B-IY-NG2_3"
+    "B-IY-NG2_4",
+    "B-IY-NG2_5"
   ],
   "lan": [
-    "L-AA-N1_2",
-    "L-AA-N1_3",
-    "L-AE-N2_2",
-    "L-AE-N2_3"
+    "L-AA-N1_4",
+    "L-AA-N1_5",
+    "L-AE-N2_4",
+    "L-AE-N2_5"
   ],
   "len": [
-    "L-EH-N2_2",
-    "L-EH-N2_3"
+    "L-EH-N2_4",
+    "L-EH-N2_5"
   ],
   "lu": [
-    "L-UH1_IY2_2",
-    "L-UH1_IY2_3"
+    "L-UH1_IY2_4",
+    "L-UH1_IY2_5"
   ],
   "mam": [
-    "M-AA-M2_2",
-    "M-AA-M2_3",
-    "MAM2_2",
-    "MAM2_3"
+    "M-AA-M2_4",
+    "M-AA-M2_5",
+    "MAM2_4",
+    "MAM2_5"
   ],
   "nug": [
-    "N-UW-G3_2",
-    "N-UW-G3_3"
+    "N-UW-G3_4",
+    "N-UW-G3_5"
   ],
   "rab": [
-    "R-AA-B3_2",
-    "R-AA-B3_3"
+    "R-AA-B3_4",
+    "R-AA-B3_5"
   ],
   "yo": [
-    "Y-OW1_2",
-    "Y-OW1_3",
-    "Y-OW1_AA-AA-B3_2",
-    "Y-OW1_AA-AA-B3_3"
+    "Y-OW1_4",
+    "Y-OW1_5",
+    "Y-OW1_AA-AA-B3_4",
+    "Y-OW1_AA-AA-B3_5"
   ],
   "fo": [
-    "F-OW3_2",
-    "F-OW3_3"
+    "F-OW3_4",
+    "F-OW3_5"
   ],
   "gen": [
-    "G-EH-N2_2",
-    "G-EH-N2_3"
+    "G-EH-N2_4",
+    "G-EH-N2_5"
   ],
   "leb": [
-    "L-EY-B1_2",
-    "L-EY-B1_3"
+    "L-EY-B1_4",
+    "L-EY-B1_5"
   ],
   "nen": [
-    "N-EH-N2_2",
-    "N-EH-N2_3"
+    "N-EH-N2_4",
+    "N-EH-N2_5"
   ],
   "nif": [
-    "N-IH-F2_2",
-    "N-IH-F2_3"
+    "N-IH-F2_4",
+    "N-IH-F2_5"
   ],
   "re": [
-    "R-EY3_2",
-    "R-EY3_3",
-    "R-EY3_EY2_2",
-    "R-EY3_EY2_3"
+    "R-EY3_4",
+    "R-EY3_5",
+    "R-EY3_EY2_4",
+    "R-EY3_EY2_5"
   ],
   "san": [
-    "S-AA-N2_1",
-    "S-AA-N2_AA-G2_2",
-    "S-AA-N2_AA-G2_3",
-    "S-AA-N3_AA-N2_2",
-    "S-AA-N3_AA-N2_3"
+    "S-AA-N2_2",
+    "S-AA-N2_AA-G2_4",
+    "S-AA-N2_AA-G2_5",
+    "S-AA-N3_AA-N2_4",
+    "S-AA-N3_AA-N2_5"
   ],
   "sid": [
-    "S-IY-D2_2",
-    "S-IY-D2_3"
+    "S-IY-D2_4",
+    "S-IY-D2_5"
   ],
   "wan": [
-    "W-AA-N2_1",
     "W-AA-N2_2",
-    "W-AA-N2_3",
-    "W-AN1_2",
-    "W-AN1_3",
-    "WAN2_3",
-    "WAN2_5"
+    "W-AA-N2_4",
+    "W-AA-N2_5",
+    "W-AN1_4",
+    "W-AN1_5",
+    "WAN2_6",
+    "WAN2_8"
   ],
   "dat": [
-    "D-AA-T3_2",
-    "D-AA-T3_3"
+    "D-AA-T3_4",
+    "D-AA-T3_5"
   ],
   "kam": [
-    "K-AA-M1_3",
-    "K-AA-M1_4"
+    "K-AA-M1_5",
+    "K-AA-M1_6"
   ],
   "ku": [
-    "K-UW2_2",
-    "K-UW2_3"
+    "K-UW2_4",
+    "K-UW2_5"
   ],
   "yu": [
-    "Y-UW3_UW-G2_2",
-    "Y-UW3_UW-G2_3"
+    "Y-UW3_UW-G2_4",
+    "Y-UW3_UW-G2_5"
   ],
   "eyyn": [
-    "AY-Y2_2",
-    "AY-Y2_3"
+    "AY-Y2_4",
+    "AY-Y2_5"
   ],
   "man": [
-    "M-AA-N1_2",
-    "M-AA-N1_3"
+    "M-AA-N1_4",
+    "M-AA-N1_5"
   ],
   "pu": [
-    "P-UW3_2",
-    "P-UW3_3",
-    "P-UW3_UW-S2_2",
-    "P-UW3_UW-S2_3"
+    "P-UW3_4",
+    "P-UW3_5",
+    "P-UW3_UW-S2_4",
+    "P-UW3_UW-S2_5"
   ],
   "pug": [
-    "P-UW-G2_2",
-    "P-UW-G2_3"
+    "P-UW-G2_4",
+    "P-UW-G2_5"
   ],
   "ye": [
-    "Y-EY1_2",
-    "Y-EY1_3",
-    "Y-EY1_EY1_1"
+    "Y-EY1_4",
+    "Y-EY1_5",
+    "Y-EY1_EY1_2"
   ],
   "a": [
-    "AA3_2",
-    "AA3_3"
+    "AA3_4",
+    "AA3_5"
   ],
   "la": [
-    "L-EH2_2",
-    "L-EH2_3",
-    "LA1_2",
-    "LA1_3"
+    "L-EH2_4",
+    "L-EH2_5",
+    "LA1_4",
+    "LA1_5"
   ],
   "oo": [
-    "OW-OW2_2",
-    "OW-OW2_3"
+    "OW-OW2_4",
+    "OW-OW2_5"
   ],
   "ta": [
-    "T-AE1_2",
-    "T-AE1_3",
-    "TA2_2",
-    "TA2_3"
+    "T-AE1_4",
+    "T-AE1_5",
+    "TA2_4",
+    "TA2_5"
   ],
   "wa": [
-    "W-AA-N2_2",
-    "W-AA-N2_3",
-    "W-AA3_AA3_1",
-    "WA1_2",
-    "WA1_3",
-    "WA2_2",
-    "WA2_3"
+    "W-AA-N2_4",
+    "W-AA-N2_5",
+    "W-AA3_AA3_2",
+    "WA1_4",
+    "WA1_5",
+    "WA2_4",
+    "WA2_5"
   ],
   "yi": [
-    "Y-IY3_1",
     "Y-IY3_2",
-    "Y-IY3_3"
+    "Y-IY3_4",
+    "Y-IY3_5"
   ],
   "zaabr": [
-    "Z-AA-AA-B-R2_2",
-    "Z-AA-AA-B-R2_3"
+    "Z-AA-AA-B-R2_4",
+    "Z-AA-AA-B-R2_5"
   ],
   "gey": [
-    "GEY3_2",
-    "GEY3_3"
+    "GEY3_4",
+    "GEY3_5"
   ],
   "ka": [
-    "K-AA1_AA-NG-R2_2",
-    "K-AA1_AA-NG-R2_3",
-    "KA3_2",
-    "KA3_3"
+    "K-AA1_AA-NG-R2_4",
+    "K-AA1_AA-NG-R2_5",
+    "KA3_4",
+    "KA3_5"
   ],
   "nun": [
-    "NUN2_2",
-    "NUN2_3"
+    "NUN2_4",
+    "NUN2_5"
   ],
   "ol": [
-    "OL2_2",
-    "OL2_3"
+    "OL2_4",
+    "OL2_5"
   ],
   "runm": [
-    "RUNM1_2",
-    "RUNM1_3"
+    "RUNM1_4",
+    "RUNM1_5"
   ],
   "si": [
-    "SI3_3",
-    "SI3_4"
+    "SI3_5",
+    "SI3_6"
   ],
   "vun": [
-    "VUN1_2",
-    "VUN1_3",
-    "VUN2UG22_2",
-    "VUN2UG22_3"
+    "VUN1_4",
+    "VUN1_5",
+    "VUN2UG22_4",
+    "VUN2UG22_5"
   ],
   "1": [
-    "RA3_1",
-    "WAN2_4"
+    "RA3_2",
+    "WAN2_7"
   ],
   "aand": [
-    "AA-AA-N-D3_1"
+    "AA-AA-N-D3_2"
   ],
   "bre": [
-    "B-R-EY2_1"
+    "B-R-EY2_2"
   ],
   "lam": [
-    "L-AA-M3_1"
+    "L-AA-M3_2"
   ],
   "men": [
-    "M-AE-N3_1",
-    "M-EH-N1_2",
-    "M-EH-N1_3"
+    "M-AE-N3_2",
+    "M-EH-N1_4",
+    "M-EH-N1_5"
   ],
   "wusg": [
-    "W-UW-S-G2_1"
+    "W-UW-S-G2_2"
   ],
   "za": [
-    "Z-AA1_AA1_1",
-    "Z-AA1_AA2_1"
+    "Z-AA1_AA1_2",
+    "Z-AA1_AA2_2"
   ],
   "rib": [
-    "R-IY-B3_2",
-    "R-IY-B3_3"
+    "R-IY-B3_4",
+    "R-IY-B3_5"
   ],
   "sag": [
-    "SAAG1_2",
-    "SAAG1_3"
+    "SAAG1_4",
+    "SAAG1_5"
   ],
   "sa": [
-    "S-AA3_AA-N2_2",
-    "S-AA3_AA-N2_3"
+    "S-AA3_AA-N2_4",
+    "S-AA3_AA-N2_5"
   ],
   "wun": [
-    "W-UW-N2_1",
-    "WUHN2_1"
+    "W-UW-N2_2",
+    "WUHN2_2"
   ],
   "bu": [
-    "B-UW1_2",
-    "B-UW1_3"
+    "B-UW1_4",
+    "B-UW1_5"
   ],
   "kud": [
-    "K-UW-D2_2",
-    "K-UW-D2_3"
+    "K-UW-D2_4",
+    "K-UW-D2_5"
   ],
   "nisr": [
-    "N-IY-S-R2_2",
-    "N-IY-S-R2_3"
+    "N-IY-S-R2_4",
+    "N-IY-S-R2_5"
   ],
   "zak": [
-    "Z-AA-K2_1",
-    "ZAK2_1"
+    "Z-AA-K2_2",
+    "ZAK2_2"
   ]
 }
