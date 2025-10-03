@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """
 Build lexicon.json by scanning manifest.csv files under a root tree.
-First, copy every per-sentence manifest.csv into a central manifests/ folder.
 
-Produces a JSON mapping: orthographic_key -> [tokenName, ...]
+Fixed behavior:
+ - Prefer the 'orig' column to derive the orthographic key (e.g. "Ra3" -> "ra")
+ - When using arpabet_name tokens, strip uniqueness suffixes like "_1", "_5" so token names match DB tokens.
 Usage:
   python3 manifest_to_lexicon_from_manifests.py --root ./syllables --out lexicon_from_manifests.json
-Options:
-  --manifests-dir  Destination folder for aggregated manifests (default: ./manifests)
-  --copy-manifests If provided (default: on), copy found per-sentence manifest.csv into manifests-dir.
 """
-
 import os
 import csv
 import json
@@ -20,38 +17,68 @@ import shutil
 from collections import defaultdict
 
 def orth_key_from_parsed(parsed):
-    # parsed is like "Ra/3" or "aad/1" -> return "ra" or "aad"
+    # If parsed looks like "Ra/3" or "ra/3" try the left-side; otherwise None
     if not parsed:
         return None
-    return parsed.split('/')[0].strip().lower()
+    # if parsed contains '/', left side is often orthographic (e.g., "Ra/3")
+    left = parsed.split('/')[0].strip().lower()
+    if left:
+        # remove any non-alphanumeric (defensive) and return
+        return re.sub(r'[^0-9a-z]', '', left)
+    return None
+
+def orth_key_from_orig(orig):
+    """
+    Derive orthographic key from the 'orig' column (filename or label).
+    Examples:
+      "Ra3.wav" -> "ra"
+      "Ra3" -> "ra"
+      "Ra3 (1).wav" -> "ra"
+      "aad1.wav" -> "aad"
+    """
+    if not orig:
+        return None
+    # remove extension if present
+    base = os.path.splitext(orig)[0]
+    # remove parenthetical parts
+    base = re.sub(r'\(.*?\)', '', base)
+    # remove non-alphanumeric
+    base = re.sub(r'[^0-9a-zA-Z]', '', base).lower()
+    # strip trailing tone digits (1/2/3) if present
+    base = re.sub(r'[123]$', '', base)
+    return base if base else None
 
 def token_from_arpabet(arp):
+    """
+    Convert an arpabet_name like 'R-AA1.wav' or 'R-AA1_5.wav' into a canonical token name:
+      - remove extension
+      - strip trailing uniqueness suffix like _<digits> (produced by make_unique_path)
+      - strip trailing spaces/parenthesis fragments if any
+    Returns token stem, or None if arp empty.
+    """
     if not arp:
         return None
-    return os.path.splitext(arp.strip())[0]
+    stem = os.path.splitext(arp.strip())[0]
+    # remove trailing parenthetical bits if present: "B_IY_(Bi1i2)" -> "B_IY"
+    stem = re.sub(r'\(.*\)$', '', stem).strip()
+    # remove a uniqueness suffix like _1, _5, _12 appended by make_unique_path
+    stem = re.sub(r'_[0-9]+$', '', stem)
+    # normalize multiple underscores/spaces
+    stem = stem.strip()
+    return stem if stem else None
 
 def sanitize_manifest_destname(root, dirpath):
-    """
-    Produce a filesystem-safe filename for a manifest copy based on the directory path.
-    Example: root=./syllables, dirpath=./syllables/Sentence 1 -> 'Sentence_1_manifest.csv'
-    For deeper paths replace os.sep with '_' and remove unsafe chars.
-    """
     rel = os.path.relpath(dirpath, root)
     if rel == ".":
         base = "root"
     else:
         base = rel
-    # replace os separators and spaces with underscore, remove other unsafe chars
     name = re.sub(r'[\\/]+', '_', base)
     name = name.replace(' ', '_')
     name = re.sub(r'[^0-9A-Za-z_\-]', '', name)
     return f"{name}_manifest.csv"
 
 def collect_manifests_into(manifests_dir, root):
-    """
-    Walk the root tree and copy every manifest.csv found into manifests_dir.
-    Returns list of paths (copied files in manifests_dir).
-    """
     os.makedirs(manifests_dir, exist_ok=True)
     copied = []
     for dirpath, dirs, files in os.walk(root):
@@ -77,22 +104,24 @@ def build_from_manifests_dir(manifests_root):
                 with open(path, newline='', encoding='utf-8') as fh:
                     reader = csv.DictReader(fh)
                     for row in reader:
-                        parsed = row.get("parsed") or row.get("Parsed") or row.get("parsed_text") or ""
-                        arp = row.get("arpabet_name") or row.get("arpabet") or row.get("arpabet_name ") or ""
-                        orig = row.get("orig") or row.get("Orig") or ""
-                        key = orth_key_from_parsed(parsed)
+                        # prefer orig (original orthographic label) to derive orth key
+                        orig = (row.get("orig") or row.get("Orig") or "").strip()
+                        parsed = (row.get("parsed") or row.get("Parsed") or row.get("parsed_text") or "").strip()
+                        arp = (row.get("arpabet_name") or row.get("arpabet") or row.get("arpabet_name ") or "").strip()
+
+                        # derive key: prefer orig, else parsed fallback
+                        key = orth_key_from_orig(orig) or orth_key_from_parsed(parsed)
                         token = token_from_arpabet(arp)
-                        # fallback: if parsed missing, use the orig filename (remove non-alnum)
-                        if not key and orig:
-                            key = re.sub(r'[^0-9a-z]', '', os.path.splitext(orig)[0].lower())
+
                         if key and token:
                             lex[key].append(token)
             except Exception as e:
                 print("Failed to read", path, ":", e)
-    # dedupe while preserving order and sort token lists
+
+    # dedupe token lists and sort for stable output
     out = {}
     for k, v in lex.items():
-        # preserve first-seen order then sort (we'll keep unique but keep original ordering then sort by token)
+        # preserve order then dedupe, then sort for predictable order
         seen = list(dict.fromkeys(v))
         out[k] = sorted(seen)
     return out

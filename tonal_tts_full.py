@@ -41,6 +41,62 @@ except Exception:
     librosa = None  # mark as unavailable; code will check this before using it.
 
 # --- Regular expressions and small helpers -----------------------------------
+
+# Example replace-or-use this helper inside tonal_tts_full.py
+import re
+def normalize_key(k):
+    return re.sub(r'[^a-z0-9\-]', '', k.lower())
+
+def map_word_to_tokens(word, lexicon):
+    """
+    Prefer whole-word lookups (case-insensitive), then try cleaned versions,
+    then greedy substring matching, then finally fall back to per-character if nothing found.
+    Returns list of token names (DB tokens) or [] if nothing mapped.
+    """
+    key = word.strip()
+    if not key:
+        return []
+
+    # 1) direct lowercase match
+    kl = key.lower()
+    if kl in lexicon and lexicon[kl]:
+        return lexicon[kl]
+
+    # 2) normalized key (strip punctuation, whitespace)
+    kn = normalize_key(kl)
+    if kn in lexicon and lexicon[kn]:
+        return lexicon[kn]
+
+    # 3) strip trailing digits / parentheses etc.
+    kn2 = re.sub(r'_[0-9]+$','', kn)
+    if kn2 in lexicon and lexicon[kn2]:
+        return lexicon[kn2]
+
+    # 4) greedy substring matching: try longest prefix matches (useful for compound or joined forms)
+    #    e.g. "san2ag2" -> try "san", "san2" etc.
+    for L in range(len(kn), 0, -1):
+        sub = kn[:L]
+        if sub in lexicon and lexicon[sub]:
+            return lexicon[sub]
+
+    # 5) last resort: split into syllable-ish pieces using non-alphanum separators
+    parts = re.split(r'[\s_\-]+', key)
+    tokens = []
+    for p in parts:
+        pkn = normalize_key(p)
+        if pkn in lexicon and lexicon[pkn]:
+            tokens.extend(lexicon[pkn])
+        else:
+            # avoid generating single-letter unknowns — try to keep original piece
+            # If nothing found, append nothing (so we fail mapping explicitly)
+            pass
+
+    # 6) no mapping found
+    return tokens
+
+
+
+
 # TOKEN_TONE_RE matches a token like "Ra3" -> ("Ra", "3"). We use a non-greedy
 # token name then trailing digits for tone. This is general enough for your naming.
 TOKEN_TONE_RE = re.compile(r"^(.+?)(\d+)$")
@@ -222,18 +278,30 @@ class TextToSyllableMapper:
                 result.append(remaining[0])
                 remaining = remaining[1:]
         return result
-
+    
     def map_sentence(self, sentence: str):
-        """
-        Map an entire sentence (string) to token sequence.
-        We extract words with a regular expression to skip punctuation, then
-        map each word individually and concatenate results.
-        """
         words = re.findall(r"[A-Za-z0-9\-\u00C0-\u024F]+", sentence)
         tokens = []
         for w in words:
-            tokens.extend(self.map_word(w))
+            mapped = map_word_to_tokens(w, self.lexicon)
+            if not mapped:
+                print(f"[WARN] Could not map word: '{w}'")  # optional logging
+            tokens.extend(mapped)
+        
         return tokens
+
+
+    # def map_sentence(self, sentence: str):
+    #     """
+    #     Map an entire sentence (string) to token sequence.
+    #     We extract words with a regular expression to skip punctuation, then
+    #     map each word individually and concatenate results.
+    #     """
+    #     words = re.findall(r"[A-Za-z0-9\-\u00C0-\u024F]+", sentence)
+    #     tokens = []
+    #     for w in words:
+    #         tokens.extend(self.map_word(w))
+    #     return tokens
 
 # --- Utilities to convert between pydub AudioSegment and numpy arrays ----------
 def audiosegment_to_numpy(audioseg: AudioSegment):
