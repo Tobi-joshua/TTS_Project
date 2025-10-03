@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # prepare_and_run_gui.sh
-# Create sanitized symlink DB, build/filter lexicons, then run tonal_tts_full.py --gui
+# Create sanitized symlink DB, generate per-sentence ARPABET manifests (in-place),
+# collect all Sentence manifests into ./manifests/, build/filter lexicons, then run tonal_tts_full.py --gui
+
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -9,6 +11,7 @@ MANIFEST_LEX=lexicon_from_manifests.json
 FILTERED_LEX=lexicon_filtered_all.json
 FILENAME_LEX=lexicon_from_filenames.json
 CANONICAL_LEX=lexicon_canonical.json
+MANIFESTS_DIR=./manifests
 
 echo "=== prepare_and_run_gui.sh - starting ==="
 
@@ -48,12 +51,55 @@ done
 num_files=$(ls -1 "$DB_LINKS" 2>/dev/null | wc -l || echo 0)
 echo "  -> Created symlinks: $num_files files"
 
+# --- NEW: generate in-place arpabet manifests inside each Sentence folder ---
+echo "--> Generating per-Sentence ARPABET manifests using map_to_arpabet.py (in-place)..."
+if [ -f map_to_arpabet.py ]; then
+  # Use --all to process all Sentence* folders and prefer Arpabet Transcription when present.
+  python3 map_to_arpabet.py ./syllables --all --use-arpabet || {
+    echo "map_to_arpabet.py failed; aborting."
+    exit 1
+  }
+else
+  echo "--> map_to_arpabet.py not found; skipping ARPABET manifest generation."
+fi
+# --- end new ---
+
+# --- NEW: collect all per-sentence manifest.csv into a single manifests/ folder ---
+echo "--> Aggregating per-Sentence manifest.csv files into $MANIFESTS_DIR ..."
+rm -rf "$MANIFESTS_DIR"
+mkdir -p "$MANIFESTS_DIR"
+
+# find Sentence folders and copy manifest.csv if present
+shopt -s nullglob
+for d in ./syllables/*; do
+  [ -d "$d" ] || continue
+  base=$(basename "$d")
+  # only process folders that start with "Sentence" (case-insensitive)
+  if [[ "${base,,}" != sentence* ]]; then
+    continue
+  fi
+  src_manifest="$d/manifest.csv"
+  if [ -f "$src_manifest" ]; then
+    # sanitize folder name to use as prefix (replace spaces with underscores)
+    prefix=$(echo "$base" | tr ' ' '_')
+    dst="$MANIFESTS_DIR/${prefix}_manifest.csv"
+    cp "$src_manifest" "$dst"
+    echo "  -> copied $src_manifest -> $dst"
+  else
+    echo "  -> no manifest in $d (skipping)"
+  fi
+done
+echo "--> Aggregation complete. Manifests copied to $MANIFESTS_DIR"
+# --- end new ---
+
 # 2) Generate manifest-derived lexicon if manifest script present (preferred)
+#    Now run manifest_to_lexicon_from_manifests.py using manifests/ as the root
 if [ -f manifest_to_lexicon_from_manifests.py ]; then
-  echo "--> Generating manifest lexicon (manifest_to_lexicon_from_manifests.py)..."
-  python3 manifest_to_lexicon_from_manifests.py --root ./syllables --out "$MANIFEST_LEX"
+  echo "--> Generating manifest lexicon (manifest_to_lexicon_from_manifests.py) from $MANIFESTS_DIR ..."
+  python3 manifest_to_lexicon_from_manifests.py --root "$MANIFESTS_DIR" --out "$MANIFEST_LEX"
 elif [ -f manifest_to_lexicon.py ]; then
-  echo "--> Generating manifest lexicon (manifest_to_lexicon.py)..."
+  echo "--> Generating manifest lexicon (manifest_to_lexicon.py) - legacy script (may expect different layout)."
+  # If the legacy script expects Sentence-root layout, point it at ./syllables (so it finds per-sentence manifests)
   python3 manifest_to_lexicon.py
 else
   if [ -f "$MANIFEST_LEX" ]; then
@@ -67,10 +113,11 @@ fi
 if [ -f "$MANIFEST_LEX" ]; then
   echo "--> Filtering $MANIFEST_LEX to tokens present in $DB_LINKS -> $FILTERED_LEX"
   python3 - <<PY
-import json, os
+import json, os, re
 src="$MANIFEST_LEX"
 out="$FILTERED_LEX"
 dbdir="$DB_LINKS"
+# tokens present in DB_LINKS
 have={os.path.splitext(f)[0] for f in os.listdir(dbdir) if f.lower().endswith('.wav') or os.path.islink(os.path.join(dbdir,f))}
 lex=json.load(open(src))
 filtered={}
