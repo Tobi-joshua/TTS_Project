@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """
-map_to_arpabet.py (fully updated)
+map_to_arpabet.py (updated to remove .mp3 duplicates)
 
 - Copies / converts ARPABET-named audio files into each Sentence folder (no arpabet_db/).
 - Writes SentenceX/manifest.csv (overwrites by default).
 - Deletes existing per-sentence manifest.csv files by default (use --no-delete-existing to keep).
-  Now deletion is recursive: any manifest.csv under Sentence folder (any subdir) will be removed.
 - Creates/clears a central manifests folder (--manifests-dir, default ./manifests) and copies each per-sentence manifest into it.
 - Converts non-WAV sources (e.g. MP3 or mislabeled files) to valid PCM WAV using ffmpeg if available,
   otherwise falls back to soundfile read/write (best-effort). If conversion not possible, will copy raw data and warn.
 
-USAGE:
-  python3 map_to_arpabet.py ./syllables --map arpabet_map.json --all --use-arpabet
-  python3 map_to_arpabet.py ./syllables --from 1 --to 100 --manifests-dir ./manifests --no-delete-existing
+NEW: Automatically deletes any .mp3 files found in sentence folders prior to processing
+to avoid duplicated entries between .mp3 and .wav sources.
 """
 import os
 import sys
@@ -103,7 +101,7 @@ def safe_write_wav_copy(src_wav_path, dst_wav_path, convert=True):
         pass
 
     # If source already looks like a WAV, just copy
-    if is_valid_wav(src_wav_path):
+    if os.path.isfile(src_wav_path) and is_valid_wav(src_wav_path):
         try:
             shutil.copy2(src_wav_path, dst_wav_path)
             return
@@ -161,6 +159,30 @@ def make_unique_path(dst_base):
         if not os.path.exists(cand):
             return cand
         i += 1
+
+# ---------------------------
+# Utilities: delete MP3s
+# ---------------------------
+def delete_mp3_files_in_tree(path):
+    """
+    Recursively remove .mp3 files under 'path'. Case-insensitive for .mp3.
+    Returns number of files removed.
+    """
+    removed = 0
+    if not os.path.exists(path):
+        return removed
+    for dirpath, dirnames, filenames in os.walk(path):
+        for fn in filenames:
+            if fn.lower().endswith(".mp3"):
+                full = os.path.join(dirpath, fn)
+                try:
+                    os.remove(full)
+                    removed += 1
+                except Exception as e:
+                    print(f"[WARN] failed to remove mp3 {full}: {e}")
+    if removed > 0:
+        print(f"[INFO] Removed {removed} .mp3 file(s) under {path}")
+    return removed
 
 # ---------------------------
 # Parse ARPABET transcription filenames
@@ -258,7 +280,10 @@ def process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=Tr
     files = sorted(os.listdir(arpa_dir))
     manifest_rows = []
     for fn in files:
-        if fn.endswith(":Zone.Identifier"):
+        # skip mp3 explicitly (mp3s should have been deleted, but extra guard here)
+        if fn.lower().endswith(".mp3"):
+            if verbose:
+                print(f"[SKIP] skipping mp3 in Arpabet Transcription: {fn}")
             continue
         parsed = parse_arpabet_transcription_filename(fn)
         if not parsed:
@@ -282,7 +307,7 @@ def process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=Tr
         parsed_label_parts = parse_label_into_syllables(orig_label)
         parsed_str = ";".join(f"{a}/{b if b else '2'}" for a,b in parsed_label_parts) if parsed_label_parts else ""
 
-        # attempt to find a matching original wav in sentence_folder
+        # attempt to find a matching original wav in sentence_folder (only consider .wav)
         matched_orig = None
         lower_orig = orig_label.lower()
         for cand in os.listdir(sentence_folder):
@@ -325,10 +350,11 @@ def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, v
             print(f"[INFO] No extracted_labels in {sentence_folder}")
         return False
 
-    wavs = [f for f in os.listdir(extracted_dir) if f.lower().endswith(".wav") or f.lower().endswith(".mp3") or f.lower().endswith(".mp4") or f.lower().endswith(".m4a")]
+    # Only consider .wav files here to prevent duplicates from mp3 presence
+    wavs = [f for f in os.listdir(extracted_dir) if f.lower().endswith(".wav")]
     if not wavs:
         if verbose:
-            print(f"[INFO] No WAV/MP3s in extracted_labels for {sentence_folder}")
+            print(f"[INFO] No WAVs in extracted_labels for {sentence_folder}")
         return False
 
     manifest_rows = []
@@ -391,6 +417,13 @@ def process_from_extracted_labels_into_sentence(sentence_folder, mapping=None, v
 # Main loop
 # ---------------------------
 def process_one_sentence(sentence_folder, mapping, use_arpabet=False, verbose=True, convert=True):
+    # NEW: Remove .mp3 files under this sentence folder before processing to avoid duplicate tokens.
+    try:
+        delete_mp3_files_in_tree(sentence_folder)
+    except Exception as e:
+        if verbose:
+            print(f"[WARN] failed to delete mp3s under {sentence_folder}: {e}")
+
     # 1) try Arpabet Transcription if requested
     if use_arpabet:
         used = process_from_arpabet_transcription_into_sentence(sentence_folder, verbose=verbose, convert=convert)
