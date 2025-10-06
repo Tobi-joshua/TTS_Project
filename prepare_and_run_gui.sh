@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# prepare_and_run_gui.sh - simplified canonical pipeline (map -> clean manifests -> lexicon -> GUI)
+# prepare_and_run_gui.sh - simplified canonical pipeline (map -> clean manifests -> refresh DB -> lexicon -> GUI)
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -17,7 +17,7 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-# 1) Create sanitized symlink DB
+# 1) Create sanitized symlink DB (initial pass: existing syllable wavs)
 echo "--> Creating sanitized symlinks in $DB_LINKS ..."
 rm -rf "$DB_LINKS"
 mkdir -p "$DB_LINKS"
@@ -73,11 +73,12 @@ if [ -z "$(ls -A "$MANIFESTS_DIR" 2>/dev/null || true)" ]; then
 fi
 echo "--> Manifests are now in: $MANIFESTS_DIR"
 
-# 🆕 3.5) Refresh DB_LINKS again to include new ARPAbet .wav files generated during mapping/manifest creation
+# 3.5) REFRESH symlink DB to include any newly-created ARPABET WAVs in sentence folders
 echo "--> Refreshing symlink DB to include ARPABET files (recreating $DB_LINKS) ..."
 rm -rf "$DB_LINKS"
 mkdir -p "$DB_LINKS"
 shopt -s nullglob
+# include any .wav in top-level sentence folders (includes ARPABET wavs created in-place)
 for f in ./syllables/*/*.wav; do
   [ -f "$f" ] || continue
   bn=$(basename "$f")
