@@ -8,6 +8,9 @@
   "aab": [
     "AA-AA-B3"
   ],
+  "aand": [
+    "AA-AA-N-D3"
+  ],
   "and": [
     "AA-N-D1"
   ],
@@ -137,6 +140,9 @@
   "n": [
     "N2"
   ],
+  "n2n": [
+    "N2_N22"
+  ],
   "n2n2": [
     "N2_N22"
   ],
@@ -222,7 +228,7 @@
     "SE3E22"
   ],
   "sentence": [
-    "SENTENCE3"
+    "SENTENCE14"
   ],
   "sentence1": [
     "SENTENCE11"

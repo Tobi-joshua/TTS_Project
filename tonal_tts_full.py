@@ -2,7 +2,8 @@
 """
 tonal_tts_full.py
 Complete concatenative syllable-based tonal TTS reference implementation.
-(Updated: PlaybackManager + safe queueing + inter-syllable silence to avoid overlapping echo)
+(Updated: TextToSyllableMapper is more tolerant; PlaybackManager + safe queueing;
+ inter-syllable silence to avoid overlapping echo)
 """
 
 # --- Standard library imports ------------------------------------------------
@@ -13,6 +14,7 @@ import json
 import threading
 import time
 import queue
+import unicodedata
 from dataclasses import dataclass
 from typing import Optional, List, Callable, Dict
 
@@ -28,7 +30,6 @@ except Exception:
     librosa = None
 
 # --- Helpers -----------------------------------------------------------------
-import re
 def normalize_key(k):
     return re.sub(r'[^a-z0-9\-]', '', k.lower())
 
@@ -131,54 +132,120 @@ class SyllableDB:
         return list({u.token for u in self.units.values()})
 
 # --- Text -> syllable mapping ------------------------------------------------
+def normalize_key_simple(s: str) -> str:
+    s = str(s or "").lower()
+    s = unicodedata.normalize('NFKD', s)
+    s = ''.join(ch for ch in s if ord(ch) < 128)
+    return re.sub(r'[^a-z0-9\-]', '', s)
+
+def collapse_repeated_vowels(s: str) -> str:
+    return re.sub(r'([aeiou])\1{2,}', r'\1\1', s)
+
 class TextToSyllableMapper:
+    """
+    More tolerant mapper:
+      - builds normalized lexicon (lowercase keys)
+      - inserts digit-stripped variant and vowel-collapsed variant
+      - greedy longest-first matching using combined list (lexicon keys + diphthongs/triphthongs)
+    """
     def __init__(self, db: SyllableDB, lexicon_path: Optional[str]=None):
         self.db = db
-        self.lexicon = {}
+        self.lexicon_raw = {}
         if lexicon_path and os.path.exists(lexicon_path):
             try:
                 with open(lexicon_path, "r", encoding="utf-8") as f:
                     raw = json.load(f)
-                self.lexicon = {k.lower(): v for k, v in raw.items()}
+                # keep raw (unchanged) for reference, but normalize keys below
+                self.lexicon_raw = {k: v for k, v in raw.items() if isinstance(k, str)}
             except Exception:
                 print("Warning: could not parse lexicon.json; ignoring.")
 
+        # vowel combos
         self.diphthongs = [
             "ai", "au", "ei", "oi", "ou", "ia", "ie", "io", "ua", "ue", "uo", "eu"
         ]
         self.triphthongs = ["iau", "uai", "eau", "iou"]
+
         self.onomatopoeia = set([
             "boom", "bang", "crash", "meow", "woof", "beep", "ding", "buzz", "hiss", "clack"
         ])
 
+        # Build expanded normalized lexicon with variants
+        self.lexicon: Dict[str, List[str]] = {}
+        for orth, tokens in self.lexicon_raw.items():
+            nk = normalize_key_simple(orth)
+            if not nk:
+                continue
+            self.lexicon.setdefault(nk, [])
+            for t in tokens:
+                if t not in self.lexicon[nk]:
+                    self.lexicon[nk].append(t)
+            # digits-stripped variant
+            nk_nodigits = re.sub(r'\d+', '', nk)
+            if nk_nodigits and nk_nodigits != nk:
+                self.lexicon.setdefault(nk_nodigits, [])
+                for t in tokens:
+                    if t not in self.lexicon[nk_nodigits]:
+                        self.lexicon[nk_nodigits].append(t)
+            # vowel-collapsed variant
+            vk = collapse_repeated_vowels(nk_nodigits)
+            if vk and vk != nk_nodigits:
+                self.lexicon.setdefault(vk, [])
+                for t in tokens:
+                    if t not in self.lexicon[vk]:
+                        self.lexicon[vk].append(t)
+
+        # Sorted list for greedy matching (longest first)
         lex_keys = sorted(self.lexicon.keys(), key=len, reverse=True)
-        combined = lex_keys + self.diphthongs + self.triphthongs + list(self.onomatopoeia)
-        self.sorted_tokens = sorted(set(combined), key=len, reverse=True)
+        combined = lex_keys + self.diphthongs + self.triphthongs
+        seen = set()
+        self.sorted_tokens = []
+        for s in combined:
+            sl = s.lower()
+            if sl not in seen:
+                seen.add(sl)
+                self.sorted_tokens.append(sl)
 
     def map_word(self, word: str):
-        word = word.strip().lower()
-        if not word:
+        w = word.strip()
+        if not w:
             return []
+        wn = normalize_key_simple(w)
 
-        if word in self.lexicon:
-            return list(self.lexicon[word])
-        if word in self.onomatopoeia:
-            return [word]
+        # 1) normalized exact
+        if wn in self.lexicon:
+            return list(self.lexicon[wn])
 
-        remaining = word
+        # 2) digits-stripped
+        wn_nod = re.sub(r'\d+','', wn)
+        if wn_nod in self.lexicon:
+            return list(self.lexicon[wn_nod])
+
+        # 3) vowel-collapsed
+        wn_coll = collapse_repeated_vowels(wn_nod)
+        if wn_coll in self.lexicon:
+            return list(self.lexicon[wn_coll])
+
+        # 4) known onomatopoeia
+        if wn in self.onomatopoeia:
+            return [wn]
+
+        # 5) greedy longest-first segmentation
+        remaining = wn
         result = []
         while remaining:
             matched = None
             for tok in self.sorted_tokens:
-                if remaining.startswith(tok.lower()):
-                    matched = tok.lower()
-                    if matched in self.lexicon:
-                        result.extend(self.lexicon[matched])
+                if remaining.startswith(tok):
+                    matched = tok
+                    if tok in self.lexicon:
+                        result.extend(self.lexicon[tok])
                     else:
-                        result.append(tok.lower())
+                        result.append(tok)
                     remaining = remaining[len(tok):]
                     break
             if not matched:
+                # final fallback: consume a character
                 result.append(remaining[0])
                 remaining = remaining[1:]
         return result
@@ -187,9 +254,9 @@ class TextToSyllableMapper:
         words = re.findall(r"[A-Za-z0-9\-\u00C0-\u024F]+", sentence)
         tokens = []
         for w in words:
-            mapped = map_word_to_tokens(w, self.lexicon)
+            mapped = self.map_word(w)
             if not mapped:
-                print(f"[WARN] Could not map word: '{w}'")
+                print(f"[WARN] mapper: no mapping for word '{w}'")
             tokens.extend(mapped)
         return tokens
 
@@ -227,11 +294,10 @@ class PlaybackManager:
             try:
                 item = self._queue.get()
                 if item is None:
-                    # sentinel: stop worker
                     break
                 audio = item
                 try:
-                    play(audio)  # blocking call until audio finishes
+                    play(audio)
                 except Exception as e:
                     print("[PLAYBACK ERROR]", e)
                 finally:
@@ -241,14 +307,9 @@ class PlaybackManager:
                 time.sleep(0.1)
 
     def play(self, audio: AudioSegment, clear_queue: bool = True):
-        """
-        Enqueue audio for playback.
-        If clear_queue=True, previously queued items are discarded.
-        """
         if audio is None:
             return
         if clear_queue:
-            # drain existing items
             while not self._queue.empty():
                 try:
                     self._queue.get_nowait()
@@ -259,7 +320,6 @@ class PlaybackManager:
 
     def stop(self):
         self._stop_event.set()
-        # enqueue sentinel to unblock worker
         self._queue.put(None)
         self._thread.join(timeout=1.0)
 
@@ -310,7 +370,6 @@ class Synthesizer:
             if output is None:
                 output = seg
             else:
-                # Insert a short silence between tokens rather than heavy crossfade to avoid smearing/echo
                 inter = AudioSegment.silent(duration=self.inter_silence_ms)
                 output = output + inter + seg
 
@@ -428,7 +487,6 @@ def start_live_gui(synth: Synthesizer, mapper: TextToSyllableMapper, playback_ma
 
         audio = synth.synthesize(tokens, apply_pitch_fn=simple_tone_pitch_adjust, highlight_tokens=highlighted)
         if audio:
-            # Use playback manager: clear_queue=True for immediate play
             playback_manager.play(audio, clear_queue=clear_queue)
             status.config(text=f"Queued {len(tokens)} tokens — {len(audio)/1000:.2f}s")
         else:
@@ -514,7 +572,6 @@ def main():
             outpath = "demo_output.wav"
             save_audio_segment_to_wav(audio, outpath)
             print(f"Synthesized saved to {outpath}; playing now...")
-            # synchronous play for --play mode
             play(audio)
         sys.exit(0)
 
@@ -564,7 +621,6 @@ def main():
                     continue
             audio = synth.synthesize(tokens, apply_pitch_fn=simple_tone_pitch_adjust)
             if audio:
-                # enqueue for playback - keep queued plays (clear_queue=False)
                 playback_manager.play(audio, clear_queue=False)
                 print(f"Queued {len(tokens)} tokens — {len(audio)/1000.0:.2f}s")
             else:

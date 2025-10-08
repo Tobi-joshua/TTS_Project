@@ -22,6 +22,23 @@
   "sentence14": [
     "SENTENCE14"
   ],
+  "sentence": [
+    "SENTENCE1",
+    "SENTENCE10",
+    "SENTENCE11",
+    "SENTENCE12",
+    "SENTENCE13",
+    "SENTENCE14",
+    "SENTENCE15",
+    "SENTENCE2",
+    "SENTENCE3",
+    "SENTENCE4",
+    "SENTENCE5",
+    "SENTENCE6",
+    "SENTENCE7",
+    "SENTENCE8",
+    "SENTENCE9"
+  ],
   "uu": [
     "UU2",
     "UW-UW2"
@@ -51,11 +68,6 @@
     "GA2",
     "R-A3",
     "R-AH1"
-  ],
-  "sentence": [
-    "SENTENCE1",
-    "SENTENCE2",
-    "SENTENCE3"
   ],
   "vi": [
     "V-IH3"
@@ -258,6 +270,9 @@
   "n2n2": [
     "N2_N22"
   ],
+  "n2n": [
+    "N2_N22"
+  ],
   "pu3us": [
     "P-UW3_UW-S2"
   ],
@@ -330,6 +345,9 @@
     "VUN2UG22"
   ],
   "aaaand": [
+    "AA-AA-N-D3"
+  ],
+  "aand": [
     "AA-AA-N-D3"
   ],
   "bre": [
