@@ -6,6 +6,7 @@ Fixed behavior:
  - Prefer the 'orig' column to derive the orthographic key (e.g. "Ra3" -> "ra")
  - When using arpabet_name tokens, strip uniqueness suffixes like "_1", "_5" so token names match DB tokens.
  - Insert orthographic variants: digits-stripped and vowel-collapsed versions for robust mapping.
+ - Order token candidates to prefer those whose alphabetic initial matches the orthographic key initial.
 Usage:
   python3 manifest_to_lexicon_from_manifests.py --root ./syllables --out lexicon_from_manifests.json
 """
@@ -106,10 +107,22 @@ def build_from_manifests_dir(manifests_root):
             except Exception as e:
                 print("Failed to read", path, ":", e)
 
+    # dedupe token lists and prefer tokens whose alphabetic initial matches the orth key initial
     out = {}
     for k, v in lex.items():
+        # preserve insertion order then dedupe
         seen = list(dict.fromkeys(v))
-        out[k] = sorted(seen)
+
+        key_initial = (k[0] if k else "").lower()
+        def token_pref(t):
+            # extract alphabetic first letter from token name (e.g., "Z-AA1" -> "Z")
+            t_alpha = re.sub(r'[^A-Za-z]', '', t)
+            t_initial = t_alpha[:1].lower() if t_alpha else ""
+            # prioritize exact initial match (0) over others (1), then lexicographic
+            return (0 if (t_initial == key_initial and key_initial) else 1, t.lower())
+
+        ordered = sorted(seen, key=token_pref)
+        out[k] = ordered
     return out
 
 def main():

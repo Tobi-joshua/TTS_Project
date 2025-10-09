@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-tonal_tts_full.py
+tonal_tts_final.py
 Complete concatenative syllable-based tonal TTS reference implementation.
 (Updated: TextToSyllableMapper is more tolerant; PlaybackManager + safe queueing;
- inter-syllable silence to avoid overlapping echo)
+ inter-syllable silence to avoid overlapping echo; GUI Enter/debounce fixed)
 """
-
 # --- Standard library imports ------------------------------------------------
 import os
 import sys
@@ -30,11 +29,23 @@ except Exception:
     librosa = None
 
 # --- Helpers -----------------------------------------------------------------
-def normalize_key(k):
-    return re.sub(r'[^a-z0-9\-]', '', k.lower())
+def normalize_key_simple(s: str) -> str:
+    s = str(s or "").lower()
+    s = unicodedata.normalize('NFKD', s)
+    s = ''.join(ch for ch in s if ord(ch) < 128)
+    return re.sub(r'[^a-z0-9\-]', '', s)
 
+def collapse_repeated_vowels(s: str) -> str:
+    return re.sub(r'([aeiou])\1{2,}', r'\1\1', s)
+
+# A tolerant word->tokens fallback used by mapper where appropriate
 def map_word_to_tokens(word, lexicon):
-    key = word.strip()
+    """
+    Legacy/fallback mapping: prefer whole-word lookups (case-insensitive),
+    normalized key, digits-stripped, greedy prefix match, then split parts.
+    Returns list of DB token names (may be empty).
+    """
+    key = str(word or "").strip()
     if not key:
         return []
 
@@ -42,7 +53,7 @@ def map_word_to_tokens(word, lexicon):
     if kl in lexicon and lexicon[kl]:
         return lexicon[kl]
 
-    kn = normalize_key(kl)
+    kn = normalize_key_simple(kl)
     if kn in lexicon and lexicon[kn]:
         return lexicon[kn]
 
@@ -50,19 +61,19 @@ def map_word_to_tokens(word, lexicon):
     if kn2 in lexicon and lexicon[kn2]:
         return lexicon[kn2]
 
+    # greedy prefix match
     for L in range(len(kn), 0, -1):
         sub = kn[:L]
         if sub in lexicon and lexicon[sub]:
             return lexicon[sub]
 
+    # split and try per-piece
     parts = re.split(r'[\s_\-]+', key)
     tokens = []
     for p in parts:
-        pkn = normalize_key(p)
+        pkn = normalize_key_simple(p)
         if pkn in lexicon and lexicon[pkn]:
             tokens.extend(lexicon[pkn])
-        else:
-            pass
     return tokens
 
 TOKEN_TONE_RE = re.compile(r"^(.+?)(\d+)$")
@@ -132,15 +143,6 @@ class SyllableDB:
         return list({u.token for u in self.units.values()})
 
 # --- Text -> syllable mapping ------------------------------------------------
-def normalize_key_simple(s: str) -> str:
-    s = str(s or "").lower()
-    s = unicodedata.normalize('NFKD', s)
-    s = ''.join(ch for ch in s if ord(ch) < 128)
-    return re.sub(r'[^a-z0-9\-]', '', s)
-
-def collapse_repeated_vowels(s: str) -> str:
-    return re.sub(r'([aeiou])\1{2,}', r'\1\1', s)
-
 class TextToSyllableMapper:
     """
     More tolerant mapper:
@@ -155,7 +157,6 @@ class TextToSyllableMapper:
             try:
                 with open(lexicon_path, "r", encoding="utf-8") as f:
                     raw = json.load(f)
-                # keep raw (unchanged) for reference, but normalize keys below
                 self.lexicon_raw = {k: v for k, v in raw.items() if isinstance(k, str)}
             except Exception:
                 print("Warning: could not parse lexicon.json; ignoring.")
@@ -207,7 +208,7 @@ class TextToSyllableMapper:
                 self.sorted_tokens.append(sl)
 
     def map_word(self, word: str):
-        w = word.strip()
+        w = str(word).strip()
         if not w:
             return []
         wn = normalize_key_simple(w)
@@ -246,6 +247,11 @@ class TextToSyllableMapper:
                     break
             if not matched:
                 # final fallback: consume a character
+                # but prefer to try fallback mapper which may return DB tokens
+                fb = map_word_to_tokens(remaining, self.lexicon)
+                if fb:
+                    result.extend(fb)
+                    break
                 result.append(remaining[0])
                 remaining = remaining[1:]
         return result
@@ -255,6 +261,9 @@ class TextToSyllableMapper:
         tokens = []
         for w in words:
             mapped = self.map_word(w)
+            if not mapped:
+                # last-resort fallback to older function to try to catch remaining cases
+                mapped = map_word_to_tokens(w, self.lexicon)
             if not mapped:
                 print(f"[WARN] mapper: no mapping for word '{w}'")
             tokens.extend(mapped)
@@ -494,14 +503,28 @@ def start_live_gui(synth: Synthesizer, mapper: TextToSyllableMapper, playback_ma
 
         highlight_diphthongs_triphthongs()
 
+    # Debounce + Enter handler to avoid double-play
     debounce = {'job': None}
     def on_key_release(event):
+        # ignore Enter in key-release scheduler to avoid duplicate play
+        if getattr(event, "keysym", "") == "Return":
+            return
         if debounce['job'] is not None:
             root.after_cancel(debounce['job'])
         debounce['job'] = root.after(300, lambda: play_text_later(clear_queue=True))
 
+    def on_return(event):
+        if debounce['job'] is not None:
+            try:
+                root.after_cancel(debounce['job'])
+            except Exception:
+                pass
+            debounce['job'] = None
+        play_text_later(clear_queue=True)
+        return "break"  # prevent newline insertion
+
     text.bind("<KeyRelease>", on_key_release)
-    text.bind("<Return>", lambda e: play_text_later(clear_queue=True))
+    text.bind("<Return>", on_return)
 
     root.mainloop()
 

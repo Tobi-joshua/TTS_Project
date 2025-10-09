@@ -105,8 +105,8 @@
     "B-AA2_AA-N2"
   ],
   "go": [
-    "D-R-AW3",
-    "G-OW1"
+    "G-OW1",
+    "D-R-AW3"
   ],
   "ee": [
     "EY-EY2"
@@ -311,8 +311,8 @@
     "WA2"
   ],
   "yi": [
-    "S-AA-N2",
-    "Y-IY3"
+    "Y-IY3",
+    "S-AA-N2"
   ],
   "zaabr": [
     "Z-AA-AA-B-R2"
@@ -361,9 +361,9 @@
     "M-EH-N1"
   ],
   "za1a": [
-    "RA3",
     "Z-AA1_AA1",
-    "Z-AA1_AA2"
+    "Z-AA1_AA2",
+    "RA3"
   ],
   "wa1a": [
     "W-AA3_AA3"
